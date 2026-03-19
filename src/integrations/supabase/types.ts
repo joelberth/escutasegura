@@ -14,16 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      denuncias: {
+        Row: {
+          arquivo_urls: string[] | null
+          codigo_acompanhamento: string
+          created_at: string
+          descricao: string
+          escola: string
+          id: string
+          resolved_at: string | null
+          response_text: string | null
+          status: Database["public"]["Enums"]["status_denuncia"]
+          tipo: Database["public"]["Enums"]["tipo_denuncia"]
+          urgencia: Database["public"]["Enums"]["nivel_urgencia"]
+        }
+        Insert: {
+          arquivo_urls?: string[] | null
+          codigo_acompanhamento: string
+          created_at?: string
+          descricao: string
+          escola: string
+          id?: string
+          resolved_at?: string | null
+          response_text?: string | null
+          status?: Database["public"]["Enums"]["status_denuncia"]
+          tipo: Database["public"]["Enums"]["tipo_denuncia"]
+          urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
+        }
+        Update: {
+          arquivo_urls?: string[] | null
+          codigo_acompanhamento?: string
+          created_at?: string
+          descricao?: string
+          escola?: string
+          id?: string
+          resolved_at?: string | null
+          response_text?: string | null
+          status?: Database["public"]["Enums"]["status_denuncia"]
+          tipo?: Database["public"]["Enums"]["tipo_denuncia"]
+          urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
+        }
+        Relationships: []
+      }
+      escolas: {
+        Row: {
+          cidade: string
+          created_at: string
+          estado: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          cidade?: string
+          created_at?: string
+          estado?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          cidade?: string
+          created_at?: string
+          estado?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      nivel_urgencia: "baixa" | "media" | "alta"
+      status_denuncia: "pendente" | "em_analise" | "resolvida"
+      tipo_denuncia: "bullying" | "estrutural" | "comunicacao" | "outro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +242,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      nivel_urgencia: ["baixa", "media", "alta"],
+      status_denuncia: ["pendente", "em_analise", "resolvida"],
+      tipo_denuncia: ["bullying", "estrutural", "comunicacao", "outro"],
+    },
   },
 } as const
