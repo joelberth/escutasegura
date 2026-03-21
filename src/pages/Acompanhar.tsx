@@ -146,6 +146,7 @@ const Acompanhar = () => {
       <Footer />
       <WhatsAppButton />
     </div>
+    </PageTransition>
   );
 };
 

@@ -88,6 +88,7 @@ const Sobre = () => (
     <Footer />
     <WhatsAppButton />
   </div>
+  </PageTransition>
 );
 
 export default Sobre;
