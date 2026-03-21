@@ -120,6 +120,11 @@ const Denunciar = () => {
       setCodigo(codigoAcompanhamento);
       setSuccess(true);
       toast({ title: "Denúncia enviada com sucesso! ✅" });
+
+      // Notify gestores
+      supabase.functions.invoke("notify-denuncia", {
+        body: { codigo: codigoAcompanhamento, tipo, escola, urgencia },
+      }).catch(() => {});
     } catch {
       toast({ title: "Erro ao enviar denúncia. Tente novamente.", variant: "destructive" });
     } finally {
