@@ -76,7 +76,7 @@ const Index = () => (
               </Button>
             </Link>
             <Link to="/admin/login">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto text-base px-8">
                 Sou Gestor
               </Button>
             </Link>

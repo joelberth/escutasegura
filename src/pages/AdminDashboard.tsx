@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, Area, AreaChart } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Denuncia = Tables<"denuncias">;
@@ -116,6 +116,25 @@ const AdminDashboard = () => {
     total: denuncias.filter((d) => d.tipo === key).length,
   }));
 
+  // Timeline data: denúncias por dia nos últimos 30 dias
+  const timelineData = (() => {
+    const days: Record<string, { total: number; resolvidas: number }> = {};
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      days[key] = { total: 0, resolvidas: 0 };
+    }
+    denuncias.forEach((d) => {
+      const key = new Date(d.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      if (days[key]) days[key].total++;
+      if (d.status === "resolvida" && d.resolved_at) {
+        const rKey = new Date(d.resolved_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        if (days[rKey]) days[rKey].resolvidas++;
+      }
+    });
+    return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
+  })();
+
   const sidebarItems = [
     { key: "denuncias" as const, label: "Denúncias", icon: Shield },
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
@@ -201,6 +220,19 @@ const AdminDashboard = () => {
                     <Tooltip />
                     <Bar dataKey="total" fill="hsl(142, 73%, 28%)" radius={[6, 6, 0, 0]} />
                   </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+                <h3 className="font-display font-semibold mb-4">Timeline — Últimos 30 dias</h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={timelineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={4} />
+                    <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="total" stroke="hsl(142, 73%, 28%)" fill="hsl(142, 73%, 28%)" fillOpacity={0.15} name="Novas" />
+                    <Area type="monotone" dataKey="resolvidas" stroke="hsl(226, 72%, 40%)" fill="hsl(226, 72%, 40%)" fillOpacity={0.1} name="Resolvidas" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
