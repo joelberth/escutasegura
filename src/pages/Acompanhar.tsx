@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import PageTransition from "@/components/PageTransition";
 
 const statusConfig = {
   pendente: { label: "Pendente", icon: Clock, className: "text-urgency-medium bg-urgency-medium/10" },
