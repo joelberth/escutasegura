@@ -138,6 +138,7 @@ const AdminDashboard = () => {
 
   const sidebarItems = [
     { key: "denuncias" as const, label: "Denúncias", icon: Shield },
+    { key: "escolas" as const, label: "Escolas", icon: Building2 },
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
     { key: "config" as const, label: "Configurações", icon: Settings },
   ];
