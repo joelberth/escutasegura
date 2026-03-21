@@ -240,6 +240,8 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {activeTab === "escolas" && <AdminEscolas />}
+
           {activeTab === "config" && (
             <div className="space-y-6 max-w-lg">
               <h2 className="text-2xl font-display font-bold">Configurações da Escola</h2>
