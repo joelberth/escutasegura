@@ -2,6 +2,7 @@ import { Shield, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import DarkModeToggle from "@/components/DarkModeToggle";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
