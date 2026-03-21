@@ -24,6 +24,7 @@ const Header = () => {
           <Link to="/admin/login">
             <Button variant="outline" size="sm">Sou Gestor</Button>
           </Link>
+          <DarkModeToggle />
         </nav>
 
         {/* Mobile toggle */}
