@@ -317,6 +317,7 @@ const Denunciar = () => {
       <Footer />
       <WhatsAppButton />
     </div>
+    </PageTransition>
   );
 };
 
