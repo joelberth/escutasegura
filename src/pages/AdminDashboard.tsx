@@ -116,6 +116,25 @@ const AdminDashboard = () => {
     total: denuncias.filter((d) => d.tipo === key).length,
   }));
 
+  // Timeline data: denúncias por dia nos últimos 30 dias
+  const timelineData = (() => {
+    const days: Record<string, { total: number; resolvidas: number }> = {};
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      days[key] = { total: 0, resolvidas: 0 };
+    }
+    denuncias.forEach((d) => {
+      const key = new Date(d.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      if (days[key]) days[key].total++;
+      if (d.status === "resolvida" && d.resolved_at) {
+        const rKey = new Date(d.resolved_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        if (days[rKey]) days[rKey].resolvidas++;
+      }
+    });
+    return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
+  })();
+
   const sidebarItems = [
     { key: "denuncias" as const, label: "Denúncias", icon: Shield },
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
