@@ -60,25 +60,75 @@ export type Database = {
         Row: {
           cidade: string
           created_at: string
+          email: string | null
+          endereco: string | null
           estado: string
           id: string
           nome: string
+          telefone: string | null
+          tipo_instituicao: string | null
         }
         Insert: {
           cidade?: string
           created_at?: string
+          email?: string | null
+          endereco?: string | null
           estado?: string
           id?: string
           nome: string
+          telefone?: string | null
+          tipo_instituicao?: string | null
         }
         Update: {
           cidade?: string
           created_at?: string
+          email?: string | null
+          endereco?: string | null
           estado?: string
           id?: string
           nome?: string
+          telefone?: string | null
+          tipo_instituicao?: string | null
         }
         Relationships: []
+      }
+      gestores: {
+        Row: {
+          created_at: string
+          email: string
+          escola_id: string
+          id: string
+          nome: string
+          telefone: string | null
+          tipo: Database["public"]["Enums"]["tipo_gestor"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          escola_id: string
+          id?: string
+          nome: string
+          telefone?: string | null
+          tipo: Database["public"]["Enums"]["tipo_gestor"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          escola_id?: string
+          id?: string
+          nome?: string
+          telefone?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_gestor"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gestores_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -116,6 +166,11 @@ export type Database = {
       nivel_urgencia: "baixa" | "media" | "alta"
       status_denuncia: "pendente" | "em_analise" | "resolvida"
       tipo_denuncia: "bullying" | "estrutural" | "comunicacao" | "outro"
+      tipo_gestor:
+        | "geral"
+        | "administrativo"
+        | "financeiro"
+        | "administrativo_financeiro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -247,6 +302,12 @@ export const Constants = {
       nivel_urgencia: ["baixa", "media", "alta"],
       status_denuncia: ["pendente", "em_analise", "resolvida"],
       tipo_denuncia: ["bullying", "estrutural", "comunicacao", "outro"],
+      tipo_gestor: [
+        "geral",
+        "administrativo",
+        "financeiro",
+        "administrativo_financeiro",
+      ],
     },
   },
 } as const

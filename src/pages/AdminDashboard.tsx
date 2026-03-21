@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
-  Download, Clock, AlertCircle, Filter
+  Download, Clock, AlertCircle, Filter, Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, Area, AreaChart } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
+import AdminEscolas from "@/pages/AdminEscolas";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -27,7 +28,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "config">("denuncias");
+  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "config">("denuncias");
   const [filterTipo, setFilterTipo] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchText, setSearchText] = useState("");
@@ -137,6 +138,7 @@ const AdminDashboard = () => {
 
   const sidebarItems = [
     { key: "denuncias" as const, label: "Denúncias", icon: Shield },
+    { key: "escolas" as const, label: "Escolas", icon: Building2 },
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
     { key: "config" as const, label: "Configurações", icon: Settings },
   ];
@@ -237,6 +239,8 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {activeTab === "escolas" && <AdminEscolas />}
 
           {activeTab === "config" && (
             <div className="space-y-6 max-w-lg">
