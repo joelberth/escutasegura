@@ -2,6 +2,7 @@ import { Shield, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import DarkModeToggle from "@/components/DarkModeToggle";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,12 +24,16 @@ const Header = () => {
           <Link to="/admin/login">
             <Button variant="outline" size="sm">Sou Gestor</Button>
           </Link>
+          <DarkModeToggle />
         </nav>
 
         {/* Mobile toggle */}
-        <button className="md:hidden p-2" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <DarkModeToggle />
+          <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile nav */}

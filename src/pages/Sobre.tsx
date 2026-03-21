@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import PageTransition from "@/components/PageTransition";
 
 const stats = [
   { label: "Denúncias registradas", value: 1247 },
@@ -13,6 +14,7 @@ const stats = [
 ];
 
 const Sobre = () => (
+  <PageTransition>
   <div className="min-h-screen flex flex-col">
     <Header />
     <main className="flex-1">
@@ -86,6 +88,7 @@ const Sobre = () => (
     <Footer />
     <WhatsAppButton />
   </div>
+  </PageTransition>
 );
 
 export default Sobre;

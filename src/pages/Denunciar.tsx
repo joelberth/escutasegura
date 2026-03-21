@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import PageTransition from "@/components/PageTransition";
 
 const tipoLabels: Record<string, string> = {
   bullying: "Bullying / Assédio",
@@ -128,6 +129,7 @@ const Denunciar = () => {
 
   if (success) {
     return (
+      <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center py-16">
@@ -163,10 +165,12 @@ const Denunciar = () => {
         </main>
         <Footer />
       </div>
+      </PageTransition>
     );
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 py-12 md:py-16">
@@ -313,6 +317,7 @@ const Denunciar = () => {
       <Footer />
       <WhatsAppButton />
     </div>
+    </PageTransition>
   );
 };
 
