@@ -222,6 +222,19 @@ const AdminDashboard = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+                <h3 className="font-display font-semibold mb-4">Timeline — Últimos 30 dias</h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={timelineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={4} />
+                    <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="total" stroke="hsl(142, 73%, 28%)" fill="hsl(142, 73%, 28%)" fillOpacity={0.15} name="Novas" />
+                    <Area type="monotone" dataKey="resolvidas" stroke="hsl(226, 72%, 40%)" fill="hsl(226, 72%, 40%)" fillOpacity={0.1} name="Resolvidas" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
 
