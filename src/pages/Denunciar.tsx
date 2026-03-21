@@ -129,6 +129,7 @@ const Denunciar = () => {
 
   if (success) {
     return (
+      <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center py-16">
