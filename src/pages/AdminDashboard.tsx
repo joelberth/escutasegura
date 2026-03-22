@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
-  Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound
+  Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
+  Bell, BellOff, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +14,14 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
+import { motion } from "framer-motion";
 import type { Tables } from "@/integrations/supabase/types";
 import AdminEscolas from "@/pages/AdminEscolas";
 import AdminLogs from "@/pages/AdminLogs";
+import StatsCards from "@/components/dashboard/StatsCards";
+import ProgressRing from "@/components/dashboard/ProgressRing";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -28,11 +33,14 @@ const tipoGestorLabels: Record<string, string> = {
   financeiro: "Gestor Financeiro", administrativo_financeiro: "Gestor Adm. e Financeiro",
 };
 
+const CHART_COLORS = ["hsl(142, 73%, 28%)", "hsl(226, 72%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)"];
+
 type TabKey = "denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { permission, supported, requestPermission, sendNotification } = usePushNotifications();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("denuncias");
@@ -110,7 +118,12 @@ const AdminDashboard = () => {
     const channel = supabase.channel("denuncias-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
         const nova = payload.new as Denuncia;
-        toast({ title: "🔔 Nova denúncia recebida!", description: `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}` });
+        const title = nova.urgencia === "alta"
+          ? "🚨 DENÚNCIA URGENTE!"
+          : "🔔 Nova denúncia recebida!";
+        const desc = `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`;
+        toast({ title, description: desc });
+        sendNotification(title, { body: desc, tag: nova.id });
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
@@ -194,27 +207,35 @@ const AdminDashboard = () => {
   const exportCSV = () => {
     const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
     const rows = filtered.map((d) =>
-      `${d.codigo_acompanhamento},${d.tipo},${d.escola},${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
+      `${d.codigo_acompanhamento},${d.tipo},"${d.escola.replace(/"/g, '""')}",${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
     );
     const csv = [...headers, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `denuncias-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
+  // Computed stats
   const today = new Date().toDateString();
   const totalToday = denuncias.filter((d) => new Date(d.created_at).toDateString() === today).length;
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const resolvedThisWeek = denuncias.filter((d) => d.status === "resolvida" && d.resolved_at && new Date(d.resolved_at) >= weekAgo).length;
   const totalResolved = denuncias.filter((d) => d.status === "resolvida").length;
+  const totalPending = denuncias.filter((d) => d.status === "pendente").length;
+  const totalHighUrgency = denuncias.filter((d) => d.urgencia === "alta").length;
   const satisfaction = denuncias.length > 0 ? Math.round((totalResolved / denuncias.length) * 100) : 0;
 
   const chartData = Object.entries(tipoLabels).map(([key, label]) => ({
     name: label, total: denuncias.filter((d) => d.tipo === key).length,
   }));
+
+  const pieData = Object.entries(statusLabels).map(([key, label]) => ({
+    name: label, value: denuncias.filter((d) => d.status === key).length,
+  })).filter(d => d.value > 0);
 
   const timelineData = (() => {
     const days: Record<string, { total: number; resolvidas: number }> = {};
@@ -236,7 +257,6 @@ const AdminDashboard = () => {
 
   const escolaNames = [...new Set(denuncias.map((d) => d.escola))].sort();
 
-  // Map data - parse location_info for lat/lng display
   const locationData = denuncias
     .filter((d) => d.location_info && d.location_info !== "Não disponível")
     .reduce((acc, d) => {
@@ -262,29 +282,48 @@ const AdminDashboard = () => {
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
           <Shield className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display font-bold">Escola Segura Report</span>
+          <span className="font-display font-bold text-sm">Escola Segura Report</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {sidebarItems.map((item) => (
             <button
               key={item.key}
               onClick={() => setActiveTab(item.key)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === item.key ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/50"
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                activeTab === item.key
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "hover:bg-sidebar-accent/50 text-sidebar-foreground/70"
               }`}
             >
               <item.icon className="h-4 w-4" /> {item.label}
               {item.badge && item.badge > 0 && (
-                <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
                   {item.badge}
                 </span>
               )}
             </button>
           ))}
         </nav>
-        <div className="p-3 border-t border-sidebar-border">
-          <p className="text-xs text-muted-foreground px-3 mb-2">
-            {isAdmin ? "Admin" : gestorEscola ? `Gestor — ${gestorEscola}` : ""}
+        <div className="p-3 border-t border-sidebar-border space-y-2">
+          {/* Push notification toggle */}
+          {supported && (
+            <button
+              onClick={async () => {
+                if (permission !== "granted") {
+                  const granted = await requestPermission();
+                  toast({ title: granted ? "Notificações ativadas! 🔔" : "Notificações bloqueadas" });
+                }
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-sidebar-accent/50 transition-colors"
+            >
+              {permission === "granted"
+                ? <><Bell className="h-3.5 w-3.5 text-primary" /> Notificações ativas</>
+                : <><BellOff className="h-3.5 w-3.5" /> Ativar notificações</>
+              }
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground px-3">
+            {isAdmin ? "👑 Admin" : gestorEscola ? `📋 ${gestorEscola}` : ""}
           </p>
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-sidebar-accent/50 transition-colors">
             <LogOut className="h-4 w-4" /> Sair
@@ -295,12 +334,12 @@ const AdminDashboard = () => {
       {/* Main */}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2 font-display font-bold">
+          <div className="flex items-center gap-2 font-display font-bold text-sm">
             <Shield className="h-5 w-5 text-primary" /> Painel
           </div>
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="flex gap-1 overflow-x-auto">
             {sidebarItems.map((item) => (
-              <button key={item.key} onClick={() => setActiveTab(item.key)} className={`p-2 rounded-lg ${activeTab === item.key ? "bg-accent" : ""}`}>
+              <button key={item.key} onClick={() => setActiveTab(item.key)} className={`p-2 rounded-lg transition-colors ${activeTab === item.key ? "bg-accent" : ""}`}>
                 <item.icon className="h-4 w-4" />
               </button>
             ))}
@@ -312,48 +351,100 @@ const AdminDashboard = () => {
           {/* Stats Tab */}
           {activeTab === "stats" && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-display font-bold">Estatísticas</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                {[
-                  { label: "Total", value: denuncias.length },
-                  { label: "Hoje", value: totalToday },
-                  { label: "Resolvidas (semana)", value: resolvedThisWeek },
-                  { label: "Taxa resolução", value: `${satisfaction}%` },
-                ].map((s) => (
-                  <div key={s.label} className="rounded-xl border border-border bg-card p-5 shadow-card">
-                    <p className="text-sm text-muted-foreground">{s.label}</p>
-                    <p className="text-3xl font-display font-bold mt-1">{s.value}</p>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-display font-bold">📊 Estatísticas</h2>
+                <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                  Atualizado em tempo real
+                </span>
               </div>
-              <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                <h3 className="font-display font-semibold mb-4">Denúncias por Tipo</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="total" fill="hsl(142, 73%, 28%)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+
+              <StatsCards
+                total={denuncias.length}
+                today={totalToday}
+                resolvedWeek={resolvedThisWeek}
+                satisfaction={satisfaction}
+                pending={totalPending}
+                highUrgency={totalHighUrgency}
+              />
+
+              {/* Performance rings */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="rounded-2xl border border-border bg-card p-6 shadow-card"
+              >
+                <h3 className="font-display font-semibold mb-6">Performance Geral</h3>
+                <div className="flex flex-wrap justify-center gap-8">
+                  <ProgressRing value={totalResolved} max={denuncias.length} label="Taxa de Resolução" color="hsl(142, 73%, 28%)" />
+                  <ProgressRing value={denuncias.filter(d => d.status === "em_analise").length} max={denuncias.length} label="Em Análise" color="hsl(226, 72%, 40%)" />
+                  <ProgressRing value={totalPending} max={denuncias.length} label="Pendentes" color="hsl(38, 92%, 50%)" />
+                  <ProgressRing value={totalHighUrgency} max={denuncias.length} label="Urgência Alta" color="hsl(0, 84%, 60%)" />
+                </div>
+              </motion.div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pie chart */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">Distribuição por Status</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine>
+                        {pieData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </motion.div>
+
+                {/* Bar chart */}
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">Denúncias por Tipo</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Bar dataKey="total" radius={[8, 8, 0, 0]}>
+                        {chartData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </motion.div>
               </div>
-              <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                <h3 className="font-display font-semibold mb-4">Timeline — Últimos 30 dias</h3>
+
+              {/* Timeline */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <h3 className="font-display font-semibold">Timeline — Últimos 30 dias</h3>
+                </div>
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={timelineData}>
+                    <defs>
+                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(142, 73%, 28%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(142, 73%, 28%)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorResolvidas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(226, 72%, 40%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(226, 72%, 40%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={4} />
                     <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="total" stroke="hsl(142, 73%, 28%)" fill="hsl(142, 73%, 28%)" fillOpacity={0.15} name="Novas" />
-                    <Area type="monotone" dataKey="resolvidas" stroke="hsl(226, 72%, 40%)" fill="hsl(226, 72%, 40%)" fillOpacity={0.1} name="Resolvidas" />
+                    <Area type="monotone" dataKey="total" stroke="hsl(142, 73%, 28%)" fill="url(#colorTotal)" strokeWidth={2} name="Novas" />
+                    <Area type="monotone" dataKey="resolvidas" stroke="hsl(226, 72%, 40%)" fill="url(#colorResolvidas)" strokeWidth={2} name="Resolvidas" />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
+              </motion.div>
+
               {isAdmin && (
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <h3 className="font-display font-semibold mb-4">Denúncias por Escola (Top 10)</h3>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">🏫 Top 10 Escolas</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart
                       data={(() => {
@@ -368,10 +459,10 @@ const AdminDashboard = () => {
                       <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={180} />
                       <Tooltip />
-                      <Bar dataKey="total" fill="hsl(226, 72%, 40%)" radius={[0, 6, 6, 0]} />
+                      <Bar dataKey="total" fill="hsl(226, 72%, 40%)" radius={[0, 8, 8, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
+                </motion.div>
               )}
             </div>
           )}
@@ -382,122 +473,123 @@ const AdminDashboard = () => {
           {/* Aprovações Tab */}
           {activeTab === "aprovacoes" && isAdmin && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-display font-bold">Aprovações de Gestores</h2>
+              <h2 className="text-2xl font-display font-bold">✅ Aprovações de Gestores</h2>
               {pendingGestores.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  <UserCheck className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p>Nenhum cadastro pendente de aprovação.</p>
-                </div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 text-muted-foreground">
+                  <UserCheck className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <p className="text-lg">Nenhum cadastro pendente</p>
+                  <p className="text-sm mt-1">Todos os gestores foram processados 🎉</p>
+                </motion.div>
               ) : (
                 <div className="space-y-3">
-                  {pendingGestores.map((g) => (
-                    <div key={g.id} className="rounded-xl border border-border bg-card p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {pendingGestores.map((g, i) => (
+                    <motion.div key={g.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                      className="rounded-2xl border border-border bg-card p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-elevated transition-shadow">
                       <div>
-                        <p className="font-medium">{g.nome}</p>
+                        <p className="font-semibold">{g.nome}</p>
                         <p className="text-sm text-muted-foreground">{g.email} • {tipoGestorLabels[g.tipo]}</p>
-                        <p className="text-sm text-muted-foreground">Escola: {(g.escolas as any)?.nome || "—"}</p>
+                        <p className="text-sm text-muted-foreground">🏫 {(g.escolas as any)?.nome || "—"}</p>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleApproveGestor(g)} className="gap-1">
+                        <Button size="sm" onClick={() => handleApproveGestor(g)} className="gap-1.5 rounded-xl">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleRejectGestor(g)} className="gap-1 text-destructive">
+                        <Button size="sm" variant="outline" onClick={() => handleRejectGestor(g)} className="gap-1.5 rounded-xl text-destructive hover:bg-destructive/10">
                           Rejeitar
                         </Button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* Logs Tab (admin only) */}
+          {/* Logs Tab */}
           {activeTab === "logs" && isAdmin && <AdminLogs />}
 
-          {/* Mapa Tab (admin only) */}
+          {/* Mapa Tab */}
           {activeTab === "mapa" && isAdmin && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-display font-bold">Mapa de Denúncias por Localização</h2>
+              <h2 className="text-2xl font-display font-bold">🗺️ Mapa de Denúncias</h2>
               {Object.keys(locationData).length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
-                  <MapPin className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" />
                   <p>Nenhuma denúncia com localização disponível.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(locationData)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([location, count]) => (
-                      <div key={location} className="rounded-xl border border-border bg-card p-5 shadow-card flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                          <MapPin className="h-6 w-6 text-accent-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{location}</p>
-                          <p className="text-sm text-muted-foreground">{count} denúncia{count > 1 ? "s" : ""}</p>
-                        </div>
-                        <div className="text-2xl font-display font-bold text-primary">{count}</div>
-                      </div>
-                    ))}
-                </div>
-              )}
-              {Object.keys(locationData).length > 0 && (
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <h3 className="font-display font-semibold mb-4">Ranking de Localizações</h3>
-                  <ResponsiveContainer width="100%" height={Math.max(200, Object.keys(locationData).length * 40)}>
-                    <BarChart
-                      data={Object.entries(locationData).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([name, total]) => ({ name: name.length > 30 ? name.slice(0, 30) + "…" : name, total }))}
-                      layout="vertical"
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={200} />
-                      <Tooltip />
-                      <Bar dataKey="total" fill="hsl(142, 73%, 28%)" radius={[0, 6, 6, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(locationData)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([location, count], i) => (
+                        <motion.div key={location} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
+                          className="rounded-2xl border border-border bg-card p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
+                          <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                            <MapPin className="h-6 w-6 text-accent-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate text-sm">{location}</p>
+                            <p className="text-xs text-muted-foreground">{count} denúncia{count > 1 ? "s" : ""}</p>
+                          </div>
+                          <div className="text-2xl font-display font-bold text-primary">{count}</div>
+                        </motion.div>
+                      ))}
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                    <h3 className="font-display font-semibold mb-4">Ranking de Localizações</h3>
+                    <ResponsiveContainer width="100%" height={Math.max(200, Object.keys(locationData).length * 40)}>
+                      <BarChart data={Object.entries(locationData).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([name, total]) => ({ name: name.length > 30 ? name.slice(0, 30) + "…" : name, total }))} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={200} />
+                        <Tooltip />
+                        <Bar dataKey="total" fill="hsl(142, 73%, 28%)" radius={[0, 8, 8, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
               )}
             </div>
           )}
 
-          {/* Solicitações de Acesso Tab (admin only) */}
+          {/* Solicitações Tab */}
           {activeTab === "solicitacoes" && isAdmin && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-display font-bold">Solicitações de Acesso a Logs</h2>
+              <h2 className="text-2xl font-display font-bold">🔐 Solicitações de Acesso</h2>
               {accessRequests.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
-                  <KeyRound className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <KeyRound className="h-12 w-12 mx-auto mb-3 opacity-20" />
                   <p>Nenhuma solicitação pendente.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {accessRequests.map((req) => (
-                    <div key={req.id} className="rounded-xl border border-border bg-card p-5 shadow-card space-y-3">
+                  {accessRequests.map((req, i) => (
+                    <motion.div key={req.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                      className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3 hover:shadow-elevated transition-shadow">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                          <p className="font-medium">{(req.gestores as any)?.nome || "Gestor"}</p>
-                          <p className="text-sm text-muted-foreground">{(req.gestores as any)?.email} • Escola: {(req.gestores as any)?.escolas?.nome || "—"}</p>
+                          <p className="font-semibold">{(req.gestores as any)?.nome || "Gestor"}</p>
+                          <p className="text-sm text-muted-foreground">{(req.gestores as any)?.email} • 🏫 {(req.gestores as any)?.escolas?.nome || "—"}</p>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Solicitando dados de: <span className="font-mono text-xs">{(req.denuncias as any)?.codigo_acompanhamento}</span>
+                            Código: <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{(req.denuncias as any)?.codigo_acompanhamento}</span>
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => handleApproveAccess(req)} className="gap-1">
+                          <Button size="sm" onClick={() => handleApproveAccess(req)} className="gap-1.5 rounded-xl">
                             <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleRejectAccess(req)} className="gap-1 text-destructive">
+                          <Button size="sm" variant="outline" onClick={() => handleRejectAccess(req)} className="gap-1.5 rounded-xl text-destructive">
                             Rejeitar
                           </Button>
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground bg-muted rounded-lg p-3 space-y-1">
+                      <div className="text-xs text-muted-foreground bg-muted/50 rounded-xl p-3 space-y-1 border border-border/50">
                         <p><strong>IP:</strong> {(req.denuncias as any)?.ip_address || "N/D"}</p>
                         <p><strong>Dispositivo:</strong> {(req.denuncias as any)?.device_info || "N/D"}</p>
                         <p><strong>Localização:</strong> {(req.denuncias as any)?.location_info || "N/D"}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -507,11 +599,30 @@ const AdminDashboard = () => {
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
-              <h2 className="text-2xl font-display font-bold">Configurações</h2>
-              <div className="rounded-xl border border-border bg-card p-6 shadow-card space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Configurações avançadas estarão disponíveis em breve. Entre em contato pelo WhatsApp para suporte.
-                </p>
+              <h2 className="text-2xl font-display font-bold">⚙️ Configurações</h2>
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Notificações Push</p>
+                    <p className="text-sm text-muted-foreground">Receba alertas no navegador</p>
+                  </div>
+                  <Button
+                    variant={permission === "granted" ? "outline" : "default"}
+                    size="sm"
+                    onClick={async () => {
+                      const granted = await requestPermission();
+                      toast({ title: granted ? "Ativado! 🔔" : "Bloqueado pelo navegador" });
+                    }}
+                    className="rounded-xl"
+                  >
+                    {permission === "granted" ? "Ativo ✅" : "Ativar"}
+                  </Button>
+                </div>
+                <div className="border-t border-border pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Mais configurações estarão disponíveis em breve.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -519,11 +630,21 @@ const AdminDashboard = () => {
           {/* Denúncias Tab */}
           {activeTab === "denuncias" && (
             <div className="space-y-6">
+              {/* Quick stats at top */}
+              <StatsCards
+                total={denuncias.length}
+                today={totalToday}
+                resolvedWeek={resolvedThisWeek}
+                satisfaction={satisfaction}
+                pending={totalPending}
+                highUrgency={totalHighUrgency}
+              />
+
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-display font-bold">
-                  Denúncias {gestorEscola && <span className="text-base font-normal text-muted-foreground">— {gestorEscola}</span>}
+                  📋 Denúncias {gestorEscola && <span className="text-base font-normal text-muted-foreground">— {gestorEscola}</span>}
                 </h2>
-                <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2">
+                <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 rounded-xl">
                   <Download className="h-4 w-4" /> Exportar CSV
                 </Button>
               </div>
@@ -532,7 +653,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <Select value={filterTipo} onValueChange={setFilterTipo}>
-                    <SelectTrigger className="w-40"><SelectValue placeholder="Tipo" /></SelectTrigger>
+                    <SelectTrigger className="w-40 rounded-xl"><SelectValue placeholder="Tipo" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos os tipos</SelectItem>
                       {Object.entries(tipoLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
@@ -540,7 +661,7 @@ const AdminDashboard = () => {
                   </Select>
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectTrigger className="w-40 rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
                     {Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
@@ -548,80 +669,80 @@ const AdminDashboard = () => {
                 </Select>
                 {isAdmin && (
                   <Select value={filterEscola} onValueChange={setFilterEscola}>
-                    <SelectTrigger className="w-56"><SelectValue placeholder="Escola" /></SelectTrigger>
+                    <SelectTrigger className="w-56 rounded-xl"><SelectValue placeholder="Escola" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todas as escolas</SelectItem>
                       {escolaNames.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 )}
-                <Input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Buscar escola ou código..." className="sm:max-w-xs" />
+                <Input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Buscar escola ou código..." className="sm:max-w-xs rounded-xl" />
               </div>
 
               {loading ? (
                 <div className="space-y-3">
-                  {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}
+                  {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-2xl bg-muted animate-pulse" />)}
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
-                  <Shield className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p>Nenhuma denúncia encontrada.</p>
+                  <Shield className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <p className="text-lg">Nenhuma denúncia encontrada</p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/50 text-muted-foreground">
-                        <tr>
-                          <th className="text-left px-4 py-3 font-medium">Código</th>
-                          <th className="text-left px-4 py-3 font-medium">Tipo</th>
-                          <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Escola</th>
-                          <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Data</th>
-                          <th className="text-left px-4 py-3 font-medium">Status</th>
-                          <th className="text-right px-4 py-3 font-medium">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {filtered.map((d) => (
-                          <tr key={d.id} className="hover:bg-muted/30 transition-colors">
-                            <td className="px-4 py-3 font-mono text-xs">{d.codigo_acompanhamento}</td>
-                            <td className="px-4 py-3">{tipoLabels[d.tipo]}</td>
-                            <td className="px-4 py-3 hidden md:table-cell max-w-[200px] truncate">{d.escola}</td>
-                            <td className="px-4 py-3 hidden sm:table-cell">{new Date(d.created_at).toLocaleDateString("pt-BR")}</td>
-                            <td className="px-4 py-3">
-                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                                d.status === "pendente" ? "text-urgency-medium bg-urgency-medium/10" :
-                                d.status === "em_analise" ? "text-secondary bg-secondary/10" :
-                                "text-primary bg-accent"
-                              }`}>
-                                {d.status === "pendente" && <Clock className="h-3 w-3" />}
-                                {d.status === "em_analise" && <AlertCircle className="h-3 w-3" />}
-                                {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3" />}
-                                {statusLabels[d.status]}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button variant="ghost" size="sm" onClick={() => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); }}>
-                                  <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                                {d.status !== "resolvida" && (
-                                  <Button variant="ghost" size="sm" onClick={() => handleResolve(d.id)}>
-                                    <CheckCircle2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                                {!isAdmin && (
-                                  <Button variant="ghost" size="sm" onClick={() => handleRequestAccess(d.id)} title="Solicitar detalhes ao admin">
-                                    <KeyRound className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                <div className="space-y-3">
+                  {filtered.map((d, i) => (
+                    <motion.div
+                      key={d.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                      className={`rounded-2xl border bg-card p-4 shadow-card hover:shadow-elevated transition-all duration-200 ${
+                        d.urgencia === "alta" ? "border-destructive/30" : "border-border"
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <span className="font-mono text-xs font-semibold bg-muted px-2 py-0.5 rounded-lg">{d.codigo_acompanhamento}</span>
+                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                              d.status === "pendente" ? "bg-urgency-medium/15 text-urgency-medium" :
+                              d.status === "em_analise" ? "bg-secondary/15 text-secondary" :
+                              "bg-primary/15 text-primary"
+                            }`}>
+                              {d.status === "pendente" && <Clock className="h-3 w-3 inline mr-1" />}
+                              {d.status === "em_analise" && <AlertCircle className="h-3 w-3 inline mr-1" />}
+                              {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                              {statusLabels[d.status]}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              d.urgencia === "alta" ? "bg-destructive/15 text-destructive" :
+                              d.urgencia === "media" ? "bg-urgency-medium/15 text-urgency-medium" :
+                              "bg-primary/15 text-primary"
+                            }`}>
+                              {urgenciaLabels[d.urgencia]}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium truncate">{d.escola}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); }} className="rounded-xl">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {d.status !== "resolvida" && (
+                            <Button variant="ghost" size="sm" onClick={() => handleResolve(d.id)} className="rounded-xl text-primary">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {!isAdmin && (
+                            <Button variant="ghost" size="sm" onClick={() => handleRequestAccess(d.id)} title="Solicitar detalhes" className="rounded-xl">
+                              <KeyRound className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
             </div>
@@ -645,7 +766,7 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Descrição</p>
-                <p className="text-sm bg-muted rounded-lg p-3">{selectedDenuncia.descricao}</p>
+                <p className="text-sm bg-muted rounded-xl p-3">{selectedDenuncia.descricao}</p>
               </div>
               {selectedDenuncia.arquivo_urls && selectedDenuncia.arquivo_urls.length > 0 && (
                 <div>
@@ -663,8 +784,8 @@ const AdminDashboard = () => {
                 <label className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" /> Responder anonimamente
                 </label>
-                <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Escreva uma resposta para o denunciante..." rows={3} />
-                <Button onClick={handleRespond} disabled={responding} className="w-full">
+                <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Escreva uma resposta..." rows={3} className="rounded-xl" />
+                <Button onClick={handleRespond} disabled={responding} className="w-full rounded-xl">
                   {responding ? "Enviando..." : "Enviar Resposta"}
                 </Button>
               </div>

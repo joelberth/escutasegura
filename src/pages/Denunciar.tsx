@@ -70,6 +70,18 @@ const Denunciar = () => {
       toast({ title: "Máximo 3 arquivos", variant: "destructive" });
       return;
     }
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
+    for (const file of newFiles) {
+      if (file.size > maxSize) {
+        toast({ title: `Arquivo "${file.name}" excede 10MB`, variant: "destructive" });
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        toast({ title: `Tipo de arquivo não permitido: ${file.name}`, variant: "destructive" });
+        return;
+      }
+    }
     setFiles([...files, ...newFiles]);
   };
 
@@ -84,8 +96,22 @@ const Denunciar = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tipo || !escola.trim() || !descricao.trim() || !aceito) {
+    const trimmedEscola = escola.trim();
+    const trimmedDescricao = descricao.trim();
+    if (!tipo || !trimmedEscola || !trimmedDescricao || !aceito) {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (trimmedDescricao.length < 10) {
+      toast({ title: "A descrição deve ter pelo menos 10 caracteres", variant: "destructive" });
+      return;
+    }
+    if (trimmedDescricao.length > 5000) {
+      toast({ title: "A descrição deve ter no máximo 5000 caracteres", variant: "destructive" });
+      return;
+    }
+    if (trimmedEscola.length > 200) {
+      toast({ title: "Nome da escola muito longo", variant: "destructive" });
       return;
     }
     setLoading(true);
