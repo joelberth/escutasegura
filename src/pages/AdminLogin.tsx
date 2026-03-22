@@ -89,6 +89,12 @@ const AdminLogin = () => {
             <Button type="submit" className="w-full gap-2" disabled={loading}>
               {loading ? "Entrando..." : <><LogIn className="h-4 w-4" /> Entrar</>}
             </Button>
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              É gestor e não tem conta?{" "}
+              <button type="button" onClick={() => navigate("/gestor/registro")} className="text-primary underline">
+                Cadastre-se aqui
+              </button>
+            </p>
           </form>
         </div>
       </main>
