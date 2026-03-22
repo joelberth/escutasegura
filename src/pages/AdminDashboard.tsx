@@ -211,6 +211,7 @@ const AdminDashboard = () => {
     ...(isAdmin ? [{ key: "escolas" as const, label: "Escolas", icon: Building2 }] : []),
     ...(isAdmin ? [{ key: "aprovacoes" as const, label: "Aprovações", icon: UserCheck }] : []),
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
+    ...(isAdmin ? [{ key: "logs" as const, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "config" as const, label: "Configurações", icon: Settings }] : []),
   ];
 
