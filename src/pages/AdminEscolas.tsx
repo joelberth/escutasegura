@@ -49,8 +49,8 @@ const AdminEscolas = () => {
 
   // School form state
   const [nome, setNome] = useState("");
-  const [cidade, setCidade] = useState("Fortaleza");
-  const [estado, setEstado] = useState("CE");
+  const [cidade, setCidade] = useState("São Luís");
+  const [estado, setEstado] = useState("MA");
   const [endereco, setEndereco] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
