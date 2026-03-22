@@ -94,6 +94,7 @@ export type Database = {
       }
       gestores: {
         Row: {
+          approved: boolean
           created_at: string
           email: string
           escola_id: string
@@ -101,8 +102,10 @@ export type Database = {
           nome: string
           telefone: string | null
           tipo: Database["public"]["Enums"]["tipo_gestor"]
+          user_id: string | null
         }
         Insert: {
+          approved?: boolean
           created_at?: string
           email: string
           escola_id: string
@@ -110,8 +113,10 @@ export type Database = {
           nome: string
           telefone?: string | null
           tipo: Database["public"]["Enums"]["tipo_gestor"]
+          user_id?: string | null
         }
         Update: {
+          approved?: boolean
           created_at?: string
           email?: string
           escola_id?: string
@@ -119,6 +124,7 @@ export type Database = {
           nome?: string
           telefone?: string | null
           tipo?: Database["public"]["Enums"]["tipo_gestor"]
+          user_id?: string | null
         }
         Relationships: [
           {
