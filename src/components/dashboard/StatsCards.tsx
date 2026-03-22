@@ -58,7 +58,7 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.08, duration: 0.4 }}
-          className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${card.gradient} p-5 shadow-card hover:shadow-elevated transition-all duration-300 group`}
+          className={`relative overflow-hidden rounded-2xl glass bg-gradient-to-br ${card.gradient} p-5 shadow-card hover:shadow-elevated transition-all duration-300 group`}
         >
           <div className="flex items-start justify-between mb-3">
             <div className={`h-10 w-10 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
