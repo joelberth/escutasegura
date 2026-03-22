@@ -145,6 +145,48 @@ export type Database = {
           },
         ]
       }
+      log_access_requests: {
+        Row: {
+          created_at: string
+          denuncia_id: string
+          gestor_id: string
+          id: string
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          denuncia_id: string
+          gestor_id: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          denuncia_id?: string
+          gestor_id?: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_access_requests_denuncia_id_fkey"
+            columns: ["denuncia_id"]
+            isOneToOne: false
+            referencedRelation: "denuncias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_access_requests_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

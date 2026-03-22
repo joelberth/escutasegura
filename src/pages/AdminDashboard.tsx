@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
-  Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText
+  Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,33 +28,31 @@ const tipoGestorLabels: Record<string, string> = {
   financeiro: "Gestor Financeiro", administrativo_financeiro: "Gestor Adm. e Financeiro",
 };
 
+type TabKey = "denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "config";
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "config">("denuncias");
+  const [activeTab, setActiveTab] = useState<TabKey>("denuncias");
   const [filterTipo, setFilterTipo] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterEscola, setFilterEscola] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [gestorEscola, setGestorEscola] = useState<string | null>(null);
+  const [gestorId, setGestorId] = useState<string | null>(null);
   const [escolas, setEscolas] = useState<{ id: string; nome: string }[]>([]);
-
-  // Detail / respond dialog
   const [selectedDenuncia, setSelectedDenuncia] = useState<Denuncia | null>(null);
   const [responseText, setResponseText] = useState("");
   const [responding, setResponding] = useState(false);
-
-  // Pending approvals
   const [pendingGestores, setPendingGestores] = useState<any[]>([]);
+  const [accessRequests, setAccessRequests] = useState<any[]>([]);
 
   const fetchDenuncias = async (escolaFilter?: string | null) => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
-    if (escolaFilter) {
-      query = query.eq("escola", escolaFilter);
-    }
+    if (escolaFilter) query = query.eq("escola", escolaFilter);
     const { data } = await query;
     if (data) setDenuncias(data);
     setLoading(false);
@@ -70,34 +68,40 @@ const AdminDashboard = () => {
     if (data) setPendingGestores(data);
   };
 
+  const fetchAccessRequests = async () => {
+    const { data } = await supabase
+      .from("log_access_requests")
+      .select("*, gestores(nome, email, escolas(nome)), denuncias(codigo_acompanhamento, escola, ip_address, device_info, location_info)")
+      .eq("status", "pendente")
+      .order("created_at", { ascending: false });
+    if (data) setAccessRequests(data);
+  };
+
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate("/admin/login"); return; }
-
       const { data: adminRole } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
-
       if (adminRole) {
         setIsAdmin(true);
         fetchDenuncias();
         fetchEscolas();
         fetchPendingGestores();
+        fetchAccessRequests();
       } else {
-        // Check if approved gestor
         const { data: gestorData } = await supabase
           .from("gestores")
-          .select("escola_id, approved, escolas(nome)")
+          .select("id, escola_id, approved, escolas(nome)")
           .eq("user_id", user.id)
           .single();
-
         if (!gestorData || !gestorData.approved) {
           await supabase.auth.signOut();
           toast({ title: "Acesso negado", description: "Sua conta ainda não foi aprovada.", variant: "destructive" });
           navigate("/admin/login");
           return;
         }
-
         const escolaNome = (gestorData.escolas as any)?.nome || null;
         setGestorEscola(escolaNome);
+        setGestorId(gestorData.id);
         fetchDenuncias(escolaNome);
         fetchEscolas();
       }
@@ -106,10 +110,7 @@ const AdminDashboard = () => {
     const channel = supabase.channel("denuncias-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
         const nova = payload.new as Denuncia;
-        toast({
-          title: "🔔 Nova denúncia recebida!",
-          description: `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`,
-        });
+        toast({ title: "🔔 Nova denúncia recebida!", description: `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}` });
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
@@ -122,10 +123,7 @@ const AdminDashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, [navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/admin/login");
-  };
+  const handleLogout = async () => { await supabase.auth.signOut(); navigate("/admin/login"); };
 
   const handleApproveGestor = async (gestor: any) => {
     await supabase.from("gestores").update({ approved: true }).eq("id", gestor.id);
@@ -140,6 +138,32 @@ const AdminDashboard = () => {
     await supabase.from("gestores").delete().eq("id", gestor.id);
     toast({ title: "Cadastro rejeitado" });
     fetchPendingGestores();
+  };
+
+  const handleApproveAccess = async (req: any) => {
+    await supabase.from("log_access_requests").update({ status: "aprovado", resolved_at: new Date().toISOString() }).eq("id", req.id);
+    toast({ title: "Acesso aprovado ✅" });
+    fetchAccessRequests();
+  };
+
+  const handleRejectAccess = async (req: any) => {
+    await supabase.from("log_access_requests").update({ status: "rejeitado", resolved_at: new Date().toISOString() }).eq("id", req.id);
+    toast({ title: "Solicitação rejeitada" });
+    fetchAccessRequests();
+  };
+
+  const handleRequestAccess = async (denunciaId: string) => {
+    if (!gestorId) return;
+    const { error } = await supabase.from("log_access_requests").insert({
+      gestor_id: gestorId,
+      denuncia_id: denunciaId,
+    });
+    if (error) {
+      if (error.code === "23505") toast({ title: "Solicitação já enviada", variant: "destructive" });
+      else toast({ title: "Erro ao solicitar", variant: "destructive" });
+    } else {
+      toast({ title: "Solicitação enviada ao administrador ✅" });
+    }
   };
 
   const filtered = denuncias.filter((d) => {
@@ -181,7 +205,6 @@ const AdminDashboard = () => {
     a.click();
   };
 
-  // Stats
   const today = new Date().toDateString();
   const totalToday = denuncias.filter((d) => new Date(d.created_at).toDateString() === today).length;
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -190,8 +213,7 @@ const AdminDashboard = () => {
   const satisfaction = denuncias.length > 0 ? Math.round((totalResolved / denuncias.length) * 100) : 0;
 
   const chartData = Object.entries(tipoLabels).map(([key, label]) => ({
-    name: label,
-    total: denuncias.filter((d) => d.tipo === key).length,
+    name: label, total: denuncias.filter((d) => d.tipo === key).length,
   }));
 
   const timelineData = (() => {
@@ -212,16 +234,26 @@ const AdminDashboard = () => {
     return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
   })();
 
-  // Unique escola names for filter
   const escolaNames = [...new Set(denuncias.map((d) => d.escola))].sort();
 
-  const sidebarItems = [
-    { key: "denuncias" as const, label: "Denúncias", icon: Shield },
-    ...(isAdmin ? [{ key: "escolas" as const, label: "Escolas", icon: Building2 }] : []),
-    ...(isAdmin ? [{ key: "aprovacoes" as const, label: "Aprovações", icon: UserCheck }] : []),
-    { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
-    ...(isAdmin ? [{ key: "logs" as const, label: "Logs", icon: FileText }] : []),
-    ...(isAdmin ? [{ key: "config" as const, label: "Configurações", icon: Settings }] : []),
+  // Map data - parse location_info for lat/lng display
+  const locationData = denuncias
+    .filter((d) => d.location_info && d.location_info !== "Não disponível")
+    .reduce((acc, d) => {
+      const loc = d.location_info!;
+      acc[loc] = (acc[loc] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+  const sidebarItems: { key: TabKey; label: string; icon: any; badge?: number }[] = [
+    { key: "denuncias", label: "Denúncias", icon: Shield },
+    ...(isAdmin ? [{ key: "escolas" as TabKey, label: "Escolas", icon: Building2 }] : []),
+    ...(isAdmin ? [{ key: "aprovacoes" as TabKey, label: "Aprovações", icon: UserCheck, badge: pendingGestores.length }] : []),
+    { key: "stats", label: "Estatísticas", icon: BarChart3 },
+    ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
+    ...(isAdmin ? [{ key: "logs" as TabKey, label: "Logs", icon: FileText }] : []),
+    ...(isAdmin ? [{ key: "solicitacoes" as TabKey, label: "Solicitações", icon: KeyRound, badge: accessRequests.length }] : []),
+    ...(isAdmin ? [{ key: "config" as TabKey, label: "Configurações", icon: Settings }] : []),
   ];
 
   return (
@@ -230,7 +262,7 @@ const AdminDashboard = () => {
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
           <Shield className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display font-bold">Escola Segura</span>
+          <span className="font-display font-bold">Escola Segura Report</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {sidebarItems.map((item) => (
@@ -242,9 +274,9 @@ const AdminDashboard = () => {
               }`}
             >
               <item.icon className="h-4 w-4" /> {item.label}
-              {item.key === "aprovacoes" && pendingGestores.length > 0 && (
+              {item.badge && item.badge > 0 && (
                 <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {pendingGestores.length}
+                  {item.badge}
                 </span>
               )}
             </button>
@@ -266,7 +298,7 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-2 font-display font-bold">
             <Shield className="h-5 w-5 text-primary" /> Painel
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto">
             {sidebarItems.map((item) => (
               <button key={item.key} onClick={() => setActiveTab(item.key)} className={`p-2 rounded-lg ${activeTab === item.key ? "bg-accent" : ""}`}>
                 <item.icon className="h-4 w-4" />
@@ -282,22 +314,17 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold">Estatísticas</h2>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-3xl font-display font-bold mt-1">{denuncias.length}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <p className="text-sm text-muted-foreground">Hoje</p>
-                  <p className="text-3xl font-display font-bold mt-1">{totalToday}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <p className="text-sm text-muted-foreground">Resolvidas (semana)</p>
-                  <p className="text-3xl font-display font-bold mt-1">{resolvedThisWeek}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-                  <p className="text-sm text-muted-foreground">Taxa resolução</p>
-                  <p className="text-3xl font-display font-bold mt-1">{satisfaction}%</p>
-                </div>
+                {[
+                  { label: "Total", value: denuncias.length },
+                  { label: "Hoje", value: totalToday },
+                  { label: "Resolvidas (semana)", value: resolvedThisWeek },
+                  { label: "Taxa resolução", value: `${satisfaction}%` },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-xl border border-border bg-card p-5 shadow-card">
+                    <p className="text-sm text-muted-foreground">{s.label}</p>
+                    <p className="text-3xl font-display font-bold mt-1">{s.value}</p>
+                  </div>
+                ))}
               </div>
               <div className="rounded-xl border border-border bg-card p-5 shadow-card">
                 <h3 className="font-display font-semibold mb-4">Denúncias por Tipo</h3>
@@ -324,8 +351,6 @@ const AdminDashboard = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-
-              {/* School-specific breakdown */}
               {isAdmin && (
                 <div className="rounded-xl border border-border bg-card p-5 shadow-card">
                   <h3 className="font-display font-semibold mb-4">Denúncias por Escola (Top 10)</h3>
@@ -334,13 +359,8 @@ const AdminDashboard = () => {
                       data={(() => {
                         const counts: Record<string, number> = {};
                         denuncias.forEach((d) => { counts[d.escola] = (counts[d.escola] || 0) + 1; });
-                        return Object.entries(counts)
-                          .sort((a, b) => b[1] - a[1])
-                          .slice(0, 10)
-                          .map(([escola, total]) => ({
-                            name: escola.length > 25 ? escola.slice(0, 25) + "…" : escola,
-                            total,
-                          }));
+                        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+                          .map(([escola, total]) => ({ name: escola.length > 25 ? escola.slice(0, 25) + "…" : escola, total }));
                       })()}
                       layout="vertical"
                     >
@@ -356,10 +376,10 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* Escolas Tab (admin only) */}
+          {/* Escolas Tab */}
           {activeTab === "escolas" && isAdmin && <AdminEscolas />}
 
-          {/* Aprovações Tab (admin only) */}
+          {/* Aprovações Tab */}
           {activeTab === "aprovacoes" && isAdmin && (
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold">Aprovações de Gestores</h2>
@@ -395,6 +415,95 @@ const AdminDashboard = () => {
           {/* Logs Tab (admin only) */}
           {activeTab === "logs" && isAdmin && <AdminLogs />}
 
+          {/* Mapa Tab (admin only) */}
+          {activeTab === "mapa" && isAdmin && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-display font-bold">Mapa de Denúncias por Localização</h2>
+              {Object.keys(locationData).length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <MapPin className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>Nenhuma denúncia com localização disponível.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(locationData)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([location, count]) => (
+                      <div key={location} className="rounded-xl border border-border bg-card p-5 shadow-card flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                          <MapPin className="h-6 w-6 text-accent-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{location}</p>
+                          <p className="text-sm text-muted-foreground">{count} denúncia{count > 1 ? "s" : ""}</p>
+                        </div>
+                        <div className="text-2xl font-display font-bold text-primary">{count}</div>
+                      </div>
+                    ))}
+                </div>
+              )}
+              {Object.keys(locationData).length > 0 && (
+                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">Ranking de Localizações</h3>
+                  <ResponsiveContainer width="100%" height={Math.max(200, Object.keys(locationData).length * 40)}>
+                    <BarChart
+                      data={Object.entries(locationData).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([name, total]) => ({ name: name.length > 30 ? name.slice(0, 30) + "…" : name, total }))}
+                      layout="vertical"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={200} />
+                      <Tooltip />
+                      <Bar dataKey="total" fill="hsl(142, 73%, 28%)" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Solicitações de Acesso Tab (admin only) */}
+          {activeTab === "solicitacoes" && isAdmin && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-display font-bold">Solicitações de Acesso a Logs</h2>
+              {accessRequests.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <KeyRound className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>Nenhuma solicitação pendente.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {accessRequests.map((req) => (
+                    <div key={req.id} className="rounded-xl border border-border bg-card p-5 shadow-card space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{(req.gestores as any)?.nome || "Gestor"}</p>
+                          <p className="text-sm text-muted-foreground">{(req.gestores as any)?.email} • Escola: {(req.gestores as any)?.escolas?.nome || "—"}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Solicitando dados de: <span className="font-mono text-xs">{(req.denuncias as any)?.codigo_acompanhamento}</span>
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleApproveAccess(req)} className="gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleRejectAccess(req)} className="gap-1 text-destructive">
+                            Rejeitar
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground bg-muted rounded-lg p-3 space-y-1">
+                        <p><strong>IP:</strong> {(req.denuncias as any)?.ip_address || "N/D"}</p>
+                        <p><strong>Dispositivo:</strong> {(req.denuncias as any)?.device_info || "N/D"}</p>
+                        <p><strong>Localização:</strong> {(req.denuncias as any)?.location_info || "N/D"}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
@@ -419,7 +528,6 @@ const AdminDashboard = () => {
                 </Button>
               </div>
 
-              {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
@@ -447,12 +555,7 @@ const AdminDashboard = () => {
                     </SelectContent>
                   </Select>
                 )}
-                <Input
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Buscar escola ou código..."
-                  className="sm:max-w-xs"
-                />
+                <Input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Buscar escola ou código..." className="sm:max-w-xs" />
               </div>
 
               {loading ? (
@@ -507,6 +610,11 @@ const AdminDashboard = () => {
                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                   </Button>
                                 )}
+                                {!isAdmin && (
+                                  <Button variant="ghost" size="sm" onClick={() => handleRequestAccess(d.id)} title="Solicitar detalhes ao admin">
+                                    <KeyRound className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -555,12 +663,7 @@ const AdminDashboard = () => {
                 <label className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" /> Responder anonimamente
                 </label>
-                <Textarea
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  placeholder="Escreva uma resposta para o denunciante..."
-                  rows={3}
-                />
+                <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Escreva uma resposta para o denunciante..." rows={3} />
                 <Button onClick={handleRespond} disabled={responding} className="w-full">
                   {responding ? "Enviando..." : "Enviar Resposta"}
                 </Button>

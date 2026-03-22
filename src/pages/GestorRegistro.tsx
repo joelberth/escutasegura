@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Shield, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ const tipoGestorLabels: Record<string, string> = {
   administrativo_financeiro: "Gestor Adm. e Financeiro",
 };
 
+type Escola = { id: string; nome: string; cidade: string; estado: string };
+
 const GestorRegistro = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,17 +26,32 @@ const GestorRegistro = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [estado, setEstado] = useState("");
+  const [municipio, setMunicipio] = useState("");
   const [escolaId, setEscolaId] = useState("");
   const [tipo, setTipo] = useState<string>("geral");
-  const [escolas, setEscolas] = useState<{ id: string; nome: string }[]>([]);
+  const [escolas, setEscolas] = useState<Escola[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    supabase.from("escolas").select("id, nome").order("nome").then(({ data }) => {
+    supabase.from("escolas").select("id, nome, cidade, estado").order("nome").then(({ data }) => {
       if (data) setEscolas(data);
     });
   }, []);
+
+  const estados = useMemo(() => [...new Set(escolas.map((e) => e.estado))].sort(), [escolas]);
+  const municipios = useMemo(() => {
+    if (!estado) return [];
+    return [...new Set(escolas.filter((e) => e.estado === estado).map((e) => e.cidade))].sort();
+  }, [escolas, estado]);
+  const filteredEscolas = useMemo(() => {
+    return escolas.filter((e) => {
+      if (estado && e.estado !== estado) return false;
+      if (municipio && e.cidade !== municipio) return false;
+      return true;
+    });
+  }, [escolas, estado, municipio]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,16 +66,10 @@ const GestorRegistro = () => {
     setLoading(true);
 
     try {
-      // Create auth account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
       if (authError) throw authError;
       if (!authData.user) throw new Error("Erro ao criar conta");
 
-      // Insert gestor record (pending approval)
       const { error: gestorError } = await supabase.from("gestores").insert({
         user_id: authData.user.id,
         escola_id: escolaId,
@@ -68,10 +79,8 @@ const GestorRegistro = () => {
         tipo: tipo as "geral" | "administrativo" | "financeiro" | "administrativo_financeiro",
         approved: false,
       });
-
       if (gestorError) throw gestorError;
 
-      // Sign out (they need approval first)
       await supabase.auth.signOut();
       setSuccess(true);
     } catch (err: any) {
@@ -129,7 +138,7 @@ const GestorRegistro = () => {
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">E-mail *</label>
+                <label className="text-sm font-medium">E-mail Institucional *</label>
                 <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="gestor@escola.edu.br" />
               </div>
               <div className="space-y-2">
@@ -140,17 +149,46 @@ const GestorRegistro = () => {
                 <label className="text-sm font-medium">Telefone</label>
                 <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(98) 9xxxx-xxxx" />
               </div>
+
+              {/* Estado */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Estado *</label>
+                <Select value={estado} onValueChange={(v) => { setEstado(v); setMunicipio(""); setEscolaId(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o estado..." /></SelectTrigger>
+                  <SelectContent>
+                    {estados.map((e) => (
+                      <SelectItem key={e} value={e}>{e}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Município */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Município *</label>
+                <Select value={municipio} onValueChange={(v) => { setMunicipio(v); setEscolaId(""); }} disabled={!estado}>
+                  <SelectTrigger><SelectValue placeholder={estado ? "Selecione o município..." : "Selecione o estado primeiro"} /></SelectTrigger>
+                  <SelectContent>
+                    {municipios.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Escola */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Escola *</label>
-                <Select value={escolaId} onValueChange={setEscolaId}>
-                  <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
+                <Select value={escolaId} onValueChange={setEscolaId} disabled={!municipio}>
+                  <SelectTrigger><SelectValue placeholder={municipio ? "Selecione a escola..." : "Selecione o município primeiro"} /></SelectTrigger>
                   <SelectContent>
-                    {escolas.map((e) => (
+                    {filteredEscolas.map((e) => (
                       <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tipo de Gestor *</label>
                 <Select value={tipo} onValueChange={setTipo}>

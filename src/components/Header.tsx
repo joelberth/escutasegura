@@ -12,7 +12,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg">
           <Shield className="h-6 w-6 text-primary" />
-          <span>Escola Segura</span>
+          <span>Escola Segura Report</span>
         </Link>
 
         {/* Desktop nav */}
