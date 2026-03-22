@@ -70,6 +70,18 @@ const Denunciar = () => {
       toast({ title: "Máximo 3 arquivos", variant: "destructive" });
       return;
     }
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
+    for (const file of newFiles) {
+      if (file.size > maxSize) {
+        toast({ title: `Arquivo "${file.name}" excede 10MB`, variant: "destructive" });
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        toast({ title: `Tipo de arquivo não permitido: ${file.name}`, variant: "destructive" });
+        return;
+      }
+    }
     setFiles([...files, ...newFiles]);
   };
 
