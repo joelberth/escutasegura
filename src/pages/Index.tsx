@@ -17,7 +17,7 @@ const benefits = [
 
 const testimonials = [
   { text: "Finalmente consegui relatar o bullying que sofria sem medo de represália. A escola agiu rápido!", author: "Estudante, 15 anos" },
-  { text: "Como gestora, essa ferramenta me ajudou a identificar problemas que eu não sabia que existiam na minha escola.", author: "Diretora, Fortaleza-CE" },
+  { text: "Como gestora, essa ferramenta me ajudou a identificar problemas que eu não sabia que existiam na minha escola.", author: "Diretora, São Luís-MA" },
   { text: "A plataforma é simples e acessível. Meu filho conseguiu fazer a denúncia sozinho pelo celular.", author: "Mãe de aluno" },
 ];
 
@@ -62,7 +62,7 @@ const Index = () => (
             className="mt-6 text-lg md:text-xl text-primary-foreground/70 max-w-2xl mx-auto"
           >
             Milhares de estudantes brasileiros não têm um canal seguro para reportar problemas na escola. 
-            O Escola Segura muda isso — de forma 100% anônima.
+            O Escola Segura Report muda isso — de forma 100% anônima.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -109,7 +109,7 @@ const Index = () => (
             <div>
               <h2 className="text-2xl font-display font-bold mb-2">ODS 16 — Paz, Justiça e Instituições Eficazes</h2>
               <p className="text-muted-foreground">
-                O Escola Segura está alinhado ao Objetivo de Desenvolvimento Sustentável 16 da ONU, 
+                O Escola Segura Report está alinhado ao Objetivo de Desenvolvimento Sustentável 16 da ONU, 
                 que visa promover sociedades pacíficas e inclusivas, proporcionar acesso à justiça para todos 
                 e construir instituições eficazes, responsáveis e inclusivas em todos os níveis.
               </p>
@@ -127,7 +127,7 @@ const Index = () => (
             viewport={{ once: true }}
             className="text-3xl font-display font-bold text-center mb-12"
           >
-            Por que usar o Escola Segura?
+            Por que usar o Escola Segura Report?
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {benefits.map((b, i) => (

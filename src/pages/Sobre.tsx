@@ -18,13 +18,12 @@ const Sobre = () => (
   <div className="min-h-screen flex flex-col">
     <Header />
     <main className="flex-1">
-      {/* Hero */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container max-w-3xl text-center">
           <div className="h-16 w-16 rounded-2xl trust-gradient flex items-center justify-center mx-auto mb-6">
             <Target className="h-8 w-8 text-secondary-foreground" />
           </div>
-          <h1 className="text-4xl font-display font-extrabold mb-4">Sobre o Escola Segura</h1>
+          <h1 className="text-4xl font-display font-extrabold mb-4">Sobre o Escola Segura Report</h1>
           <p className="text-lg text-muted-foreground">
             Uma plataforma criada para dar voz a quem mais precisa — estudantes, pais e comunidades escolares —
             de forma totalmente anônima e segura.
@@ -32,7 +31,6 @@ const Sobre = () => (
         </div>
       </section>
 
-      {/* Stats */}
       <section className="py-12 border-b border-border">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -48,7 +46,6 @@ const Sobre = () => (
         </div>
       </section>
 
-      {/* ODS 16 */}
       <section className="py-16 md:py-20">
         <div className="container max-w-4xl">
           <h2 className="text-3xl font-display font-bold text-center mb-12">Impacto ODS 16</h2>
@@ -70,7 +67,6 @@ const Sobre = () => (
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-16 bg-muted/30">
         <div className="container text-center max-w-2xl">
           <h2 className="text-3xl font-display font-bold mb-4">Faça parte dessa mudança</h2>

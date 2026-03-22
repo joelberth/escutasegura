@@ -8,7 +8,7 @@ const Footer = () => (
         <div>
           <div className="flex items-center gap-2 font-display font-bold text-lg mb-3">
             <Shield className="h-5 w-5 text-primary" />
-            Escola Segura
+            Escola Segura Report
           </div>
           <p className="text-sm text-muted-foreground">
             Plataforma anônima de denúncias escolares alinhada ao ODS 16.
@@ -30,7 +30,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="mt-10 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-        Feito com <Heart className="inline h-3.5 w-3.5 text-destructive mx-0.5" /> para escolas brasileiras • Fortaleza-CE
+        Feito com <Heart className="inline h-3.5 w-3.5 text-destructive mx-0.5" /> para escolas brasileiras • Maranhão
       </div>
     </div>
   </footer>
