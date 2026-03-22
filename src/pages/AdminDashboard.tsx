@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
 import AdminEscolas from "@/pages/AdminEscolas";
+import AdminLogs from "@/pages/AdminLogs";
 
 type Denuncia = Tables<"denuncias">;
 
