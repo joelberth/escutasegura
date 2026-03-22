@@ -354,6 +354,9 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Logs Tab (admin only) */}
+          {activeTab === "logs" && isAdmin && <AdminLogs />}
+
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
