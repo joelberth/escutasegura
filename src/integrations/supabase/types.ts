@@ -20,8 +20,11 @@ export type Database = {
           codigo_acompanhamento: string
           created_at: string
           descricao: string
+          device_info: string | null
           escola: string
           id: string
+          ip_address: string | null
+          location_info: string | null
           resolved_at: string | null
           response_text: string | null
           status: Database["public"]["Enums"]["status_denuncia"]
@@ -33,8 +36,11 @@ export type Database = {
           codigo_acompanhamento: string
           created_at?: string
           descricao: string
+          device_info?: string | null
           escola: string
           id?: string
+          ip_address?: string | null
+          location_info?: string | null
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
@@ -46,8 +52,11 @@ export type Database = {
           codigo_acompanhamento?: string
           created_at?: string
           descricao?: string
+          device_info?: string | null
           escola?: string
           id?: string
+          ip_address?: string | null
+          location_info?: string | null
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
