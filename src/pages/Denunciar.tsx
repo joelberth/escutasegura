@@ -28,7 +28,7 @@ const urgenciaOptions = [
 
 const exampleData = {
   tipo: "bullying" as const,
-  escola: "E.E.F.M. Liceu do Ceará - Fortaleza",
+  escola: "Centro Educa Mais Paulo Freire",
   descricao: "Alunos do 9º ano estão praticando bullying contra um colega com deficiência durante o recreio. A situação já acontece há semanas e nenhum professor tomou providência.",
   urgencia: "alta" as const,
 };
