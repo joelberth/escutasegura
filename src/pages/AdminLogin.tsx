@@ -37,15 +37,30 @@ const AdminLogin = () => {
 
     const { data: roleData } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
 
-    if (!roleData) {
-      await supabase.auth.signOut();
-      toast({ title: "Acesso negado", description: "Você não tem permissão de gestor.", variant: "destructive" });
+    if (roleData) {
+      toast({ title: "Bem-vindo(a), Admin! ✅" });
+      navigate("/admin");
       setLoading(false);
       return;
     }
 
-    toast({ title: "Bem-vindo(a), Gestor! ✅" });
-    navigate("/admin");
+    // Check if approved gestor
+    const { data: gestorData } = await supabase
+      .from("gestores")
+      .select("approved")
+      .eq("user_id", user.id)
+      .eq("approved", true)
+      .maybeSingle();
+
+    if (gestorData) {
+      toast({ title: "Bem-vindo(a), Gestor! ✅" });
+      navigate("/admin");
+      setLoading(false);
+      return;
+    }
+
+    await supabase.auth.signOut();
+    toast({ title: "Acesso negado", description: "Sua conta ainda não foi aprovada pelo administrador.", variant: "destructive" });
     setLoading(false);
   };
 
@@ -74,6 +89,12 @@ const AdminLogin = () => {
             <Button type="submit" className="w-full gap-2" disabled={loading}>
               {loading ? "Entrando..." : <><LogIn className="h-4 w-4" /> Entrar</>}
             </Button>
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              É gestor e não tem conta?{" "}
+              <button type="button" onClick={() => navigate("/gestor/registro")} className="text-primary underline">
+                Cadastre-se aqui
+              </button>
+            </p>
           </form>
         </div>
       </main>

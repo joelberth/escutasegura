@@ -28,7 +28,7 @@ const urgenciaOptions = [
 
 const exampleData = {
   tipo: "bullying" as const,
-  escola: "E.E.F.M. Liceu do Ceará - Fortaleza",
+  escola: "Centro Educa Mais Paulo Freire",
   descricao: "Alunos do 9º ano estão praticando bullying contra um colega com deficiência durante o recreio. A situação já acontece há semanas e nenhum professor tomou providência.",
   urgencia: "alta" as const,
 };
@@ -218,7 +218,7 @@ const Denunciar = () => {
                 value={escolaSearch}
                 onChange={(e) => { setEscolaSearch(e.target.value); setEscola(e.target.value); setShowSuggestions(true); }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Ex: E.E. Professor X - Fortaleza"
+                placeholder="Ex: Centro Educa Mais Paulo Freire"
               />
               {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
                 <div className="absolute z-10 top-full mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">
