@@ -424,9 +424,14 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-display font-bold">📊 Estatísticas</h2>
-                <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                  Atualizado em tempo real
-                </span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={exportDashboardPDF} className="gap-1.5 rounded-xl">
+                    <Download className="h-4 w-4" /> Exportar PDF
+                  </Button>
+                  <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                    Atualizado em tempo real
+                  </span>
+                </div>
               </div>
 
               <StatsCards
