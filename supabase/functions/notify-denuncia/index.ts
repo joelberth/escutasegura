@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
       const { data: gestores } = await supabase
         .from("gestores")
         .select("email")
-        .eq("escola_id", escolaData.id);
+        .eq("escola_id", escolaData.id)
+        .eq("approved", true);
       if (gestores) {
         gestorEmails = gestores.map((g: { email: string }) => g.email).filter(Boolean);
       }
@@ -39,16 +40,42 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log the notification (email sending would require email domain setup)
-    console.log(`[NOTIFY] Nova denúncia ${codigo} - Tipo: ${tipo}, Escola: ${escola}, Urgência: ${urgencia}`);
-    console.log(`[NOTIFY] Gestores notificados: ${gestorEmails.length > 0 ? gestorEmails.join(", ") : "nenhum cadastrado"}`);
+    // Get admin emails for high urgency
+    let adminEmails: string[] = [];
+    if (urgencia === "alta") {
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      
+      if (adminRoles && adminRoles.length > 0) {
+        for (const role of adminRoles) {
+          const { data: userData } = await supabase.auth.admin.getUserById(role.user_id);
+          if (userData?.user?.email) {
+            adminEmails.push(userData.user.email);
+          }
+        }
+      }
+    }
+
+    const allNotified = [...new Set([...gestorEmails, ...adminEmails])];
+
+    // Log the notification
+    const urgLabel = urgencia === "alta" ? "🚨 ALTA" : urgencia === "media" ? "⚠️ MÉDIA" : "✅ BAIXA";
+    console.log(`[NOTIFY] Nova denúncia ${codigo} - Tipo: ${tipo}, Escola: ${escola}, Urgência: ${urgLabel}`);
+    console.log(`[NOTIFY] Destinatários: ${allNotified.length > 0 ? allNotified.join(", ") : "nenhum cadastrado"}`);
+    
+    if (urgencia === "alta") {
+      console.log(`[ALERTA] Denúncia de URGÊNCIA ALTA detectada! Admins notificados: ${adminEmails.join(", ")}`);
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        notified: gestorEmails.length,
-        message: gestorEmails.length > 0 
-          ? `Notificação enviada para ${gestorEmails.length} gestor(es)` 
+        notified: allNotified.length,
+        urgencia,
+        message: allNotified.length > 0 
+          ? `Notificação enviada para ${allNotified.length} pessoa(s)${urgencia === "alta" ? " (URGÊNCIA ALTA - admins incluídos)" : ""}` 
           : "Nenhum gestor cadastrado para esta escola"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
