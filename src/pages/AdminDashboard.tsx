@@ -324,6 +324,35 @@ const AdminDashboard = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* School-specific breakdown */}
+              {isAdmin && (
+                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">Denúncias por Escola (Top 10)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={(() => {
+                        const counts: Record<string, number> = {};
+                        denuncias.forEach((d) => { counts[d.escola] = (counts[d.escola] || 0) + 1; });
+                        return Object.entries(counts)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 10)
+                          .map(([escola, total]) => ({
+                            name: escola.length > 25 ? escola.slice(0, 25) + "…" : escola,
+                            total,
+                          }));
+                      })()}
+                      layout="vertical"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={180} />
+                      <Tooltip />
+                      <Bar dataKey="total" fill="hsl(226, 72%, 40%)" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
           )}
 
