@@ -220,6 +220,70 @@ const AdminDashboard = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportDashboardPDF = () => {
+    const statusData = Object.entries(statusLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.status === k).length,
+    }));
+    const tipoData = Object.entries(tipoLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.tipo === k).length,
+    }));
+    const urgData = Object.entries(urgenciaLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.urgencia === k).length,
+    }));
+    const topEscolas = (() => {
+      const counts: Record<string, number> = {};
+      denuncias.forEach(d => { counts[d.escola] = (counts[d.escola] || 0) + 1; });
+      return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    })();
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dashboard - Escola Segura Report</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:30px;color:#1a1a1a;font-size:13px}
+      h1{font-size:22px;color:#15803d;margin-bottom:4px}
+      h2{font-size:16px;margin-top:28px;margin-bottom:10px;color:#1e40af;border-bottom:2px solid #e5e7eb;padding-bottom:4px}
+      .subtitle{color:#666;font-size:13px;margin-bottom:24px}
+      .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+      .stat{border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
+      .stat .num{font-size:28px;font-weight:bold;color:#15803d}
+      .stat .lbl{font-size:11px;color:#666;margin-top:2px}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      th,td{border:1px solid #ddd;padding:6px 10px;text-align:left;font-size:12px}
+      th{background:#f5f5f5;font-weight:600}
+      .bar-row{display:flex;align-items:center;gap:8px;margin:3px 0}
+      .bar-label{width:200px;font-size:12px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .bar-fill{height:18px;background:#1e40af;border-radius:4px;min-width:4px}
+      .bar-val{font-size:11px;color:#666;width:30px}
+      @media print{body{padding:10px}.stats{grid-template-columns:repeat(2,1fr)}}
+    </style></head><body>
+    <h1>📊 Relatório do Dashboard — Escola Segura Report</h1>
+    <p class="subtitle">Gerado em ${new Date().toLocaleString("pt-BR")} • Total: ${denuncias.length} denúncias</p>
+    <div class="stats">
+      <div class="stat"><div class="num">${denuncias.length}</div><div class="lbl">Total</div></div>
+      <div class="stat"><div class="num">${totalPending}</div><div class="lbl">Pendentes</div></div>
+      <div class="stat"><div class="num">${resolvedThisWeek}</div><div class="lbl">Resolvidas (7d)</div></div>
+      <div class="stat"><div class="num">${satisfaction}%</div><div class="lbl">Taxa Resolução</div></div>
+    </div>
+    <h2>Por Status</h2>
+    <table><tr><th>Status</th><th>Quantidade</th><th>%</th></tr>
+    ${statusData.map(s => `<tr><td>${s.label}</td><td>${s.count}</td><td>${denuncias.length ? Math.round(s.count / denuncias.length * 100) : 0}%</td></tr>`).join("")}
+    </table>
+    <h2>Por Tipo</h2>
+    <table><tr><th>Tipo</th><th>Quantidade</th></tr>
+    ${tipoData.map(t => `<tr><td>${t.label}</td><td>${t.count}</td></tr>`).join("")}
+    </table>
+    <h2>Por Urgência</h2>
+    <table><tr><th>Urgência</th><th>Quantidade</th></tr>
+    ${urgData.map(u => `<tr><td>${u.label}</td><td>${u.count}</td></tr>`).join("")}
+    </table>
+    <h2>Top 10 Escolas</h2>
+    ${topEscolas.map(([nome, total]) => `<div class="bar-row"><div class="bar-label">${nome}</div><div class="bar-fill" style="width:${Math.max(4, (total / (topEscolas[0]?.[1] || 1)) * 200)}px"></div><div class="bar-val">${total}</div></div>`).join("")}
+    <script>window.print();</script>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) { win.document.write(html); win.document.close(); }
+  };
+
   // Computed stats
   const today = new Date().toDateString();
   const totalToday = denuncias.filter((d) => new Date(d.created_at).toDateString() === today).length;
