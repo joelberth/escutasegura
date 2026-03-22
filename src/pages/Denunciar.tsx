@@ -106,6 +106,26 @@ const Denunciar = () => {
 
       const codigoAcompanhamento = generateCode();
 
+      // Capture device info
+      const deviceInfo = (() => {
+        const ua = navigator.userAgent;
+        if (/Mobi|Android/i.test(ua)) return "Mobile";
+        if (/Tablet|iPad/i.test(ua)) return "Tablet";
+        return "Desktop";
+      })() + ` — ${navigator.userAgent.slice(0, 80)}`;
+
+      // Try to get IP and location
+      let ipAddress = "Não disponível";
+      let locationInfo = "Não disponível";
+      try {
+        const ipRes = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          ipAddress = ipData.ip || "Não disponível";
+          locationInfo = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(", ") || "Não disponível";
+        }
+      } catch { /* silently fail */ }
+
       const { error } = await supabase.from("denuncias").insert({
         tipo: tipo as "bullying" | "estrutural" | "comunicacao" | "outro",
         escola,
@@ -113,6 +133,9 @@ const Denunciar = () => {
         urgencia,
         codigo_acompanhamento: codigoAcompanhamento,
         arquivo_urls: arquivoUrls,
+        ip_address: ipAddress,
+        device_info: deviceInfo,
+        location_info: locationInfo,
       });
 
       if (error) throw error;

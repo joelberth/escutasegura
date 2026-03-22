@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
-  Download, Clock, AlertCircle, Filter, Building2, UserCheck
+  Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
 import AdminEscolas from "@/pages/AdminEscolas";
+import AdminLogs from "@/pages/AdminLogs";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -32,7 +33,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "aprovacoes" | "config">("denuncias");
+  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "config">("denuncias");
   const [filterTipo, setFilterTipo] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterEscola, setFilterEscola] = useState("all");
@@ -103,7 +104,16 @@ const AdminDashboard = () => {
     });
 
     const channel = supabase.channel("denuncias-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "denuncias" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
+        const nova = payload.new as Denuncia;
+        toast({
+          title: "🔔 Nova denúncia recebida!",
+          description: `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`,
+        });
+        if (gestorEscola) fetchDenuncias(gestorEscola);
+        else fetchDenuncias();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "denuncias" }, () => {
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
@@ -210,6 +220,7 @@ const AdminDashboard = () => {
     ...(isAdmin ? [{ key: "escolas" as const, label: "Escolas", icon: Building2 }] : []),
     ...(isAdmin ? [{ key: "aprovacoes" as const, label: "Aprovações", icon: UserCheck }] : []),
     { key: "stats" as const, label: "Estatísticas", icon: BarChart3 },
+    ...(isAdmin ? [{ key: "logs" as const, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "config" as const, label: "Configurações", icon: Settings }] : []),
   ];
 
@@ -313,6 +324,35 @@ const AdminDashboard = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* School-specific breakdown */}
+              {isAdmin && (
+                <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+                  <h3 className="font-display font-semibold mb-4">Denúncias por Escola (Top 10)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={(() => {
+                        const counts: Record<string, number> = {};
+                        denuncias.forEach((d) => { counts[d.escola] = (counts[d.escola] || 0) + 1; });
+                        return Object.entries(counts)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 10)
+                          .map(([escola, total]) => ({
+                            name: escola.length > 25 ? escola.slice(0, 25) + "…" : escola,
+                            total,
+                          }));
+                      })()}
+                      layout="vertical"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={180} />
+                      <Tooltip />
+                      <Bar dataKey="total" fill="hsl(226, 72%, 40%)" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
           )}
 
@@ -351,6 +391,9 @@ const AdminDashboard = () => {
               )}
             </div>
           )}
+
+          {/* Logs Tab (admin only) */}
+          {activeTab === "logs" && isAdmin && <AdminLogs />}
 
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
