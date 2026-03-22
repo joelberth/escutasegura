@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "aprovacoes" | "config">("denuncias");
+  const [activeTab, setActiveTab] = useState<"denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "config">("denuncias");
   const [filterTipo, setFilterTipo] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterEscola, setFilterEscola] = useState("all");
