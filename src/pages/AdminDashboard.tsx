@@ -461,7 +461,7 @@ const AdminDashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pie chart */}
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">Distribuição por Status</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
@@ -474,7 +474,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Bar chart */}
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">Denúncias por Tipo</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={chartData}>
@@ -491,7 +491,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Timeline */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-2xl glass p-6 shadow-card">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="h-4 w-4 text-primary" />
                   <h3 className="font-display font-semibold">Timeline — Últimos 30 dias</h3>
@@ -519,7 +519,7 @@ const AdminDashboard = () => {
               </motion.div>
 
               {isAdmin && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">🏫 Top 10 Escolas</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart
@@ -560,7 +560,7 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                   {pendingGestores.map((g, i) => (
                     <motion.div key={g.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                      className="rounded-2xl border border-border bg-card p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-elevated transition-shadow">
+                      className="rounded-2xl glass p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-elevated transition-shadow">
                       <div>
                         <p className="font-semibold">{g.nome}</p>
                         <p className="text-sm text-muted-foreground">{g.email} • {tipoGestorLabels[g.tipo]}</p>
@@ -600,7 +600,7 @@ const AdminDashboard = () => {
                       .sort((a, b) => b[1] - a[1])
                       .map(([location, count], i) => (
                         <motion.div key={location} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                          className="rounded-2xl border border-border bg-card p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
+                          className="rounded-2xl glass p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
                           <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                             <MapPin className="h-6 w-6 text-accent-foreground" />
                           </div>
@@ -612,7 +612,7 @@ const AdminDashboard = () => {
                         </motion.div>
                       ))}
                   </div>
-                  <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                  <div className="rounded-2xl glass p-6 shadow-card">
                     <h3 className="font-display font-semibold mb-4">Ranking de Localizações</h3>
                     <ResponsiveContainer width="100%" height={Math.max(200, Object.keys(locationData).length * 40)}>
                       <BarChart data={Object.entries(locationData).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([name, total]) => ({ name: name.length > 30 ? name.slice(0, 30) + "…" : name, total }))} layout="vertical">
@@ -642,7 +642,7 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                   {accessRequests.map((req, i) => (
                     <motion.div key={req.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                      className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3 hover:shadow-elevated transition-shadow">
+                      className="rounded-2xl glass p-5 shadow-card space-y-3 hover:shadow-elevated transition-shadow">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                           <p className="font-semibold">{(req.gestores as any)?.nome || "Gestor"}</p>
@@ -676,7 +676,7 @@ const AdminDashboard = () => {
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
               <h2 className="text-2xl font-display font-bold">⚙️ Configurações</h2>
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+              <div className="rounded-2xl glass p-6 shadow-card space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Notificações Push</p>

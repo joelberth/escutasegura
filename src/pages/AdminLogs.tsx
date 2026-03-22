@@ -112,7 +112,7 @@ const AdminLogs = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map((log) => (
-            <div key={log.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div key={log.id} className="rounded-xl glass p-4 shadow-card">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
