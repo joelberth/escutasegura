@@ -10,6 +10,7 @@ import Acompanhar from "./pages/Acompanhar";
 import Sobre from "./pages/Sobre";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import GestorRegistro from "./pages/GestorRegistro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
