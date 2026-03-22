@@ -101,7 +101,7 @@ const Index = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="rounded-2xl border border-border bg-card p-8 md:p-10 shadow-card flex flex-col md:flex-row items-center gap-8"
+            className="rounded-2xl glass p-8 md:p-10 shadow-card flex flex-col md:flex-row items-center gap-8"
           >
             <div className="flex-shrink-0 h-20 w-20 rounded-2xl trust-gradient flex items-center justify-center">
               <Target className="h-10 w-10 text-secondary-foreground" />
@@ -139,7 +139,7 @@ const Index = () => (
                 whileInView="visible"
                 viewport={{ once: true }}
                 whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="rounded-xl border border-border bg-card p-6 shadow-card hover:shadow-elevated transition-shadow"
+                className="rounded-xl glass p-6 shadow-card hover:shadow-elevated transition-shadow"
               >
                 <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center mb-4">
                   <b.icon className="h-6 w-6 text-accent-foreground" />
@@ -165,7 +165,7 @@ const Index = () => (
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                className="rounded-xl border border-border bg-card p-6 shadow-card"
+                className="rounded-xl glass p-6 shadow-card"
               >
                 <p className="text-muted-foreground mb-4 italic">"{t.text}"</p>
                 <p className="text-sm font-semibold">— {t.author}</p>

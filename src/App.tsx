@@ -11,6 +11,7 @@ import Sobre from "./pages/Sobre";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import GestorRegistro from "./pages/GestorRegistro";
+import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/gestor/registro" element={<GestorRegistro />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

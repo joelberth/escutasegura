@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import DarkModeToggle from "@/components/DarkModeToggle";
+import ProfileButton from "@/components/ProfileButton";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,6 +26,7 @@ const Header = () => {
             <Button variant="outline" size="sm">Sou Gestor</Button>
           </Link>
           <DarkModeToggle />
+          <ProfileButton />
         </nav>
 
         {/* Mobile toggle */}

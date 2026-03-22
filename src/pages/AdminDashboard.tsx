@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp
+  Bell, BellOff, TrendingUp, User
 } from "lucide-react";
+import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -219,6 +220,70 @@ const AdminDashboard = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportDashboardPDF = () => {
+    const statusData = Object.entries(statusLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.status === k).length,
+    }));
+    const tipoData = Object.entries(tipoLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.tipo === k).length,
+    }));
+    const urgData = Object.entries(urgenciaLabels).map(([k, v]) => ({
+      label: v, count: denuncias.filter(d => d.urgencia === k).length,
+    }));
+    const topEscolas = (() => {
+      const counts: Record<string, number> = {};
+      denuncias.forEach(d => { counts[d.escola] = (counts[d.escola] || 0) + 1; });
+      return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    })();
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dashboard - Escola Segura Report</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:30px;color:#1a1a1a;font-size:13px}
+      h1{font-size:22px;color:#15803d;margin-bottom:4px}
+      h2{font-size:16px;margin-top:28px;margin-bottom:10px;color:#1e40af;border-bottom:2px solid #e5e7eb;padding-bottom:4px}
+      .subtitle{color:#666;font-size:13px;margin-bottom:24px}
+      .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+      .stat{border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
+      .stat .num{font-size:28px;font-weight:bold;color:#15803d}
+      .stat .lbl{font-size:11px;color:#666;margin-top:2px}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      th,td{border:1px solid #ddd;padding:6px 10px;text-align:left;font-size:12px}
+      th{background:#f5f5f5;font-weight:600}
+      .bar-row{display:flex;align-items:center;gap:8px;margin:3px 0}
+      .bar-label{width:200px;font-size:12px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .bar-fill{height:18px;background:#1e40af;border-radius:4px;min-width:4px}
+      .bar-val{font-size:11px;color:#666;width:30px}
+      @media print{body{padding:10px}.stats{grid-template-columns:repeat(2,1fr)}}
+    </style></head><body>
+    <h1>📊 Relatório do Dashboard — Escola Segura Report</h1>
+    <p class="subtitle">Gerado em ${new Date().toLocaleString("pt-BR")} • Total: ${denuncias.length} denúncias</p>
+    <div class="stats">
+      <div class="stat"><div class="num">${denuncias.length}</div><div class="lbl">Total</div></div>
+      <div class="stat"><div class="num">${totalPending}</div><div class="lbl">Pendentes</div></div>
+      <div class="stat"><div class="num">${resolvedThisWeek}</div><div class="lbl">Resolvidas (7d)</div></div>
+      <div class="stat"><div class="num">${satisfaction}%</div><div class="lbl">Taxa Resolução</div></div>
+    </div>
+    <h2>Por Status</h2>
+    <table><tr><th>Status</th><th>Quantidade</th><th>%</th></tr>
+    ${statusData.map(s => `<tr><td>${s.label}</td><td>${s.count}</td><td>${denuncias.length ? Math.round(s.count / denuncias.length * 100) : 0}%</td></tr>`).join("")}
+    </table>
+    <h2>Por Tipo</h2>
+    <table><tr><th>Tipo</th><th>Quantidade</th></tr>
+    ${tipoData.map(t => `<tr><td>${t.label}</td><td>${t.count}</td></tr>`).join("")}
+    </table>
+    <h2>Por Urgência</h2>
+    <table><tr><th>Urgência</th><th>Quantidade</th></tr>
+    ${urgData.map(u => `<tr><td>${u.label}</td><td>${u.count}</td></tr>`).join("")}
+    </table>
+    <h2>Top 10 Escolas</h2>
+    ${topEscolas.map(([nome, total]) => `<div class="bar-row"><div class="bar-label">${nome}</div><div class="bar-fill" style="width:${Math.max(4, (total / (topEscolas[0]?.[1] || 1)) * 200)}px"></div><div class="bar-val">${total}</div></div>`).join("")}
+    <script>window.print();</script>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) { win.document.write(html); win.document.close(); }
+  };
+
   // Computed stats
   const today = new Date().toDateString();
   const totalToday = denuncias.filter((d) => new Date(d.created_at).toDateString() === today).length;
@@ -279,7 +344,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
           <Shield className="h-6 w-6 text-sidebar-primary" />
           <span className="font-display font-bold text-sm">Escola Segura Report</span>
@@ -305,6 +370,12 @@ const AdminDashboard = () => {
           ))}
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-2">
+          <div className="flex items-center justify-between px-3">
+            <DarkModeToggle />
+            <button onClick={() => navigate("/perfil")} className="p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors" title="Perfil">
+              <User className="h-4 w-4" />
+            </button>
+          </div>
           {/* Push notification toggle */}
           {supported && (
             <button
@@ -353,9 +424,14 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-display font-bold">📊 Estatísticas</h2>
-                <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                  Atualizado em tempo real
-                </span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={exportDashboardPDF} className="gap-1.5 rounded-xl">
+                    <Download className="h-4 w-4" /> Exportar PDF
+                  </Button>
+                  <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                    Atualizado em tempo real
+                  </span>
+                </div>
               </div>
 
               <StatsCards
@@ -372,7 +448,7 @@ const AdminDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="rounded-2xl border border-border bg-card p-6 shadow-card"
+                className="rounded-2xl glass p-6 shadow-card"
               >
                 <h3 className="font-display font-semibold mb-6">Performance Geral</h3>
                 <div className="flex flex-wrap justify-center gap-8">
@@ -385,7 +461,7 @@ const AdminDashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pie chart */}
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">Distribuição por Status</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
@@ -398,7 +474,7 @@ const AdminDashboard = () => {
                 </motion.div>
 
                 {/* Bar chart */}
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">Denúncias por Tipo</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={chartData}>
@@ -415,7 +491,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Timeline */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-2xl glass p-6 shadow-card">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="h-4 w-4 text-primary" />
                   <h3 className="font-display font-semibold">Timeline — Últimos 30 dias</h3>
@@ -443,7 +519,7 @@ const AdminDashboard = () => {
               </motion.div>
 
               {isAdmin && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">🏫 Top 10 Escolas</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart
@@ -484,7 +560,7 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                   {pendingGestores.map((g, i) => (
                     <motion.div key={g.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                      className="rounded-2xl border border-border bg-card p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-elevated transition-shadow">
+                      className="rounded-2xl glass p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-elevated transition-shadow">
                       <div>
                         <p className="font-semibold">{g.nome}</p>
                         <p className="text-sm text-muted-foreground">{g.email} • {tipoGestorLabels[g.tipo]}</p>
@@ -524,7 +600,7 @@ const AdminDashboard = () => {
                       .sort((a, b) => b[1] - a[1])
                       .map(([location, count], i) => (
                         <motion.div key={location} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                          className="rounded-2xl border border-border bg-card p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
+                          className="rounded-2xl glass p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
                           <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                             <MapPin className="h-6 w-6 text-accent-foreground" />
                           </div>
@@ -536,7 +612,7 @@ const AdminDashboard = () => {
                         </motion.div>
                       ))}
                   </div>
-                  <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                  <div className="rounded-2xl glass p-6 shadow-card">
                     <h3 className="font-display font-semibold mb-4">Ranking de Localizações</h3>
                     <ResponsiveContainer width="100%" height={Math.max(200, Object.keys(locationData).length * 40)}>
                       <BarChart data={Object.entries(locationData).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([name, total]) => ({ name: name.length > 30 ? name.slice(0, 30) + "…" : name, total }))} layout="vertical">
@@ -566,7 +642,7 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                   {accessRequests.map((req, i) => (
                     <motion.div key={req.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                      className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3 hover:shadow-elevated transition-shadow">
+                      className="rounded-2xl glass p-5 shadow-card space-y-3 hover:shadow-elevated transition-shadow">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                           <p className="font-semibold">{(req.gestores as any)?.nome || "Gestor"}</p>
@@ -600,7 +676,7 @@ const AdminDashboard = () => {
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
               <h2 className="text-2xl font-display font-bold">⚙️ Configurações</h2>
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+              <div className="rounded-2xl glass p-6 shadow-card space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Notificações Push</p>

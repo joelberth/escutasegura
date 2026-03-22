@@ -129,6 +129,23 @@
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
+  .glass {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  .glass-strong {
+    background: hsl(var(--card) / 0.4);
+    backdrop-filter: blur(24px) saturate(2);
+    -webkit-backdrop-filter: blur(24px) saturate(2);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+  .glass-sidebar {
+    background: hsl(var(--sidebar-background) / 0.85);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  }
 }
 
 @layer utilities {
