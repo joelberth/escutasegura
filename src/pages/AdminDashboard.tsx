@@ -104,7 +104,16 @@ const AdminDashboard = () => {
     });
 
     const channel = supabase.channel("denuncias-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "denuncias" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
+        const nova = payload.new as Denuncia;
+        toast({
+          title: "🔔 Nova denúncia recebida!",
+          description: `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`,
+        });
+        if (gestorEscola) fetchDenuncias(gestorEscola);
+        else fetchDenuncias();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "denuncias" }, () => {
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
