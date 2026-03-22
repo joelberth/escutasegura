@@ -218,7 +218,7 @@ const Denunciar = () => {
                 value={escolaSearch}
                 onChange={(e) => { setEscolaSearch(e.target.value); setEscola(e.target.value); setShowSuggestions(true); }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Ex: E.E. Professor X - Fortaleza"
+                placeholder="Ex: Centro Educa Mais Paulo Freire"
               />
               {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
                 <div className="absolute z-10 top-full mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">

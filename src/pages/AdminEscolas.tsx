@@ -86,7 +86,7 @@ const AdminEscolas = () => {
   };
 
   const resetForm = () => {
-    setNome(""); setCidade("Fortaleza"); setEstado("CE");
+    setNome(""); setCidade("São Luís"); setEstado("MA");
     setEndereco(""); setTelefone(""); setEmail(""); setTipoInstituicao("pública");
     setEditingEscola(null);
   };
