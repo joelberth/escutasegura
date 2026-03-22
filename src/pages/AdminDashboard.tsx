@@ -448,7 +448,7 @@ const AdminDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="rounded-2xl border border-border bg-card p-6 shadow-card"
+                className="rounded-2xl glass p-6 shadow-card"
               >
                 <h3 className="font-display font-semibold mb-6">Performance Geral</h3>
                 <div className="flex flex-wrap justify-center gap-8">
