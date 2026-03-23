@@ -119,6 +119,7 @@ const AdminDashboard = () => {
         setGestorEscola(escolaNome);
         setGestorId(gestorData.id);
         setUserName(gestorData.nome || "Gestor");
+        fetchDenuncias(escolaNome);
         fetchEscolas();
       }
     });
