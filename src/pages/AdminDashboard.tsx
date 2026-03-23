@@ -338,9 +338,11 @@ const AdminDashboard = () => {
     ...(isAdmin ? [{ key: "escolas" as TabKey, label: "Escolas", icon: Building2 }] : []),
     ...(isAdmin ? [{ key: "aprovacoes" as TabKey, label: "Aprovações", icon: UserCheck, badge: pendingGestores.length }] : []),
     { key: "stats", label: "Estatísticas", icon: BarChart3 },
+    { key: "analytics", label: "Analytics", icon: PieChartIcon },
     ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
     ...(isAdmin ? [{ key: "logs" as TabKey, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "solicitacoes" as TabKey, label: "Solicitações", icon: KeyRound, badge: accessRequests.length }] : []),
+    ...(isAdmin ? [{ key: "usuarios" as TabKey, label: "Usuários", icon: Users }] : []),
     ...(isAdmin ? [{ key: "config" as TabKey, label: "Configurações", icon: Settings }] : []),
   ];
 
