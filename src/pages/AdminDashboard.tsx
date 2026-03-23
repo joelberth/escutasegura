@@ -23,6 +23,9 @@ import AdminEscolas from "@/pages/AdminEscolas";
 import AdminLogs from "@/pages/AdminLogs";
 import StatsCards from "@/components/dashboard/StatsCards";
 import ProgressRing from "@/components/dashboard/ProgressRing";
+import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
+import ChatPanel from "@/components/dashboard/ChatPanel";
+import AdminUsuarios from "@/pages/AdminUsuarios";
 
 type Denuncia = Tables<"denuncias">;
 
