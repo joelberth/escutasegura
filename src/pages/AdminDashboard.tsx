@@ -548,6 +548,9 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && <AnalyticsPanel denuncias={denuncias} />}
+
           {/* Escolas Tab */}
           {activeTab === "escolas" && isAdmin && <AdminEscolas />}
 
