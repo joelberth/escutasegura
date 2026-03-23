@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import LogDetailModal from "@/components/dashboard/LogDetailModal";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -16,6 +17,7 @@ const AdminLogs = () => {
   const [logs, setLogs] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedLog, setSelectedLog] = useState<Denuncia | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -40,7 +42,6 @@ const AdminLogs = () => {
   });
 
   const exportPDF = () => {
-    // Generate a printable HTML and open in new window for PDF save
     const rows = filtered.map((log) => `
       <tr>
         <td>${log.codigo_acompanhamento}</td>
@@ -112,7 +113,11 @@ const AdminLogs = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map((log) => (
-            <div key={log.id} className="rounded-xl glass p-4 shadow-card">
+            <div
+              key={log.id}
+              className="rounded-xl glass p-4 shadow-card cursor-pointer hover:shadow-elevated transition-all"
+              onClick={() => setSelectedLog(log)}
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -158,6 +163,12 @@ const AdminLogs = () => {
           ))}
         </div>
       )}
+
+      <LogDetailModal
+        log={selectedLog}
+        open={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+      />
     </div>
   );
 };
