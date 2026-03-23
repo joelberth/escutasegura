@@ -94,6 +94,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate("/admin/login"); return; }
+      setUserId(user.id);
       const { data: adminRole } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
       if (adminRole) {
         setIsAdmin(true);
