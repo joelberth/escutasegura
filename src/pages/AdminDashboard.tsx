@@ -881,6 +881,15 @@ const AdminDashboard = () => {
                   {responding ? "Enviando..." : "Enviar Resposta"}
                 </Button>
               </div>
+              {/* Real-time Chat */}
+              <div className="border-t border-border pt-4">
+                <ChatPanel
+                  denunciaId={selectedDenuncia.id}
+                  denunciaCodigo={selectedDenuncia.codigo_acompanhamento}
+                  userId={userId}
+                  senderName={userName}
+                />
+              </div>
             </div>
           )}
         </DialogContent>
