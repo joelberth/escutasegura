@@ -106,7 +106,7 @@ const AdminDashboard = () => {
       } else {
         const { data: gestorData } = await supabase
           .from("gestores")
-          .select("id, escola_id, approved, escolas(nome)")
+          .select("id, nome, escola_id, approved, escolas(nome)")
           .eq("user_id", user.id)
           .single();
         if (!gestorData || !gestorData.approved) {
