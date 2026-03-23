@@ -680,6 +680,9 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Usuários Tab */}
+          {activeTab === "usuarios" && isAdmin && <AdminUsuarios />}
+
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
