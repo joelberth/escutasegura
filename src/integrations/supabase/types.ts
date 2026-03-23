@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          created_at: string
+          denuncia_id: string
+          id: string
+          message: string
+          sender_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          denuncia_id: string
+          id?: string
+          message: string
+          sender_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          denuncia_id?: string
+          id?: string
+          message?: string
+          sender_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_denuncia_id_fkey"
+            columns: ["denuncia_id"]
+            isOneToOne: false
+            referencedRelation: "denuncias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       denuncias: {
         Row: {
           arquivo_urls: string[] | null

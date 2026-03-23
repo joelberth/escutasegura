@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,9 @@ import AdminEscolas from "@/pages/AdminEscolas";
 import AdminLogs from "@/pages/AdminLogs";
 import StatsCards from "@/components/dashboard/StatsCards";
 import ProgressRing from "@/components/dashboard/ProgressRing";
+import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
+import ChatPanel from "@/components/dashboard/ChatPanel";
+import AdminUsuarios from "@/pages/AdminUsuarios";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -36,7 +39,7 @@ const tipoGestorLabels: Record<string, string> = {
 
 const CHART_COLORS = ["hsl(142, 73%, 28%)", "hsl(226, 72%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)"];
 
-type TabKey = "denuncias" | "stats" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "config";
+type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -44,6 +47,8 @@ const AdminDashboard = () => {
   const { permission, supported, requestPermission, sendNotification } = usePushNotifications();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   const [activeTab, setActiveTab] = useState<TabKey>("denuncias");
   const [filterTipo, setFilterTipo] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -89,9 +94,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate("/admin/login"); return; }
+      setUserId(user.id);
       const { data: adminRole } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
       if (adminRole) {
         setIsAdmin(true);
+        setUserName("Admin");
         fetchDenuncias();
         fetchEscolas();
         fetchPendingGestores();
@@ -99,7 +106,7 @@ const AdminDashboard = () => {
       } else {
         const { data: gestorData } = await supabase
           .from("gestores")
-          .select("id, escola_id, approved, escolas(nome)")
+          .select("id, nome, escola_id, approved, escolas(nome)")
           .eq("user_id", user.id)
           .single();
         if (!gestorData || !gestorData.approved) {
@@ -111,6 +118,7 @@ const AdminDashboard = () => {
         const escolaNome = (gestorData.escolas as any)?.nome || null;
         setGestorEscola(escolaNome);
         setGestorId(gestorData.id);
+        setUserName(gestorData.nome || "Gestor");
         fetchDenuncias(escolaNome);
         fetchEscolas();
       }
@@ -335,9 +343,11 @@ const AdminDashboard = () => {
     ...(isAdmin ? [{ key: "escolas" as TabKey, label: "Escolas", icon: Building2 }] : []),
     ...(isAdmin ? [{ key: "aprovacoes" as TabKey, label: "Aprovações", icon: UserCheck, badge: pendingGestores.length }] : []),
     { key: "stats", label: "Estatísticas", icon: BarChart3 },
+    { key: "analytics", label: "Analytics", icon: PieChartIcon },
     ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
     ...(isAdmin ? [{ key: "logs" as TabKey, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "solicitacoes" as TabKey, label: "Solicitações", icon: KeyRound, badge: accessRequests.length }] : []),
+    ...(isAdmin ? [{ key: "usuarios" as TabKey, label: "Usuários", icon: Users }] : []),
     ...(isAdmin ? [{ key: "config" as TabKey, label: "Configurações", icon: Settings }] : []),
   ];
 
@@ -543,6 +553,9 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && <AnalyticsPanel denuncias={denuncias} />}
+
           {/* Escolas Tab */}
           {activeTab === "escolas" && isAdmin && <AdminEscolas />}
 
@@ -671,6 +684,9 @@ const AdminDashboard = () => {
               )}
             </div>
           )}
+
+          {/* Usuários Tab */}
+          {activeTab === "usuarios" && isAdmin && <AdminUsuarios />}
 
           {/* Config Tab */}
           {activeTab === "config" && isAdmin && (
@@ -864,6 +880,15 @@ const AdminDashboard = () => {
                 <Button onClick={handleRespond} disabled={responding} className="w-full rounded-xl">
                   {responding ? "Enviando..." : "Enviar Resposta"}
                 </Button>
+              </div>
+              {/* Real-time Chat */}
+              <div className="border-t border-border pt-4">
+                <ChatPanel
+                  denunciaId={selectedDenuncia.id}
+                  denunciaCodigo={selectedDenuncia.codigo_acompanhamento}
+                  userId={userId}
+                  senderName={userName}
+                />
               </div>
             </div>
           )}

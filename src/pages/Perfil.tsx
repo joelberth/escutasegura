@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Save, ArrowLeft, User, Mail, Phone, Building2, Shield } from "lucide-react";
+import { Camera, Save, ArrowLeft, User, Mail, Phone, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -23,6 +26,7 @@ const Perfil = () => {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -45,7 +49,6 @@ const Perfil = () => {
         setTelefone(gestorData.telefone || "");
       }
 
-      // Check avatar in storage
       const { data: files } = await supabase.storage.from("evidencias").list(`avatars/${user.id}`);
       if (files && files.length > 0) {
         const { data: urlData } = supabase.storage.from("evidencias").getPublicUrl(`avatars/${user.id}/${files[0].name}`);
@@ -72,7 +75,6 @@ const Perfil = () => {
     const ext = file.name.split(".").pop();
     const path = `avatars/${user.id}/avatar.${ext}`;
 
-    // Remove old avatar files
     const { data: oldFiles } = await supabase.storage.from("evidencias").list(`avatars/${user.id}`);
     if (oldFiles && oldFiles.length > 0) {
       await supabase.storage.from("evidencias").remove(oldFiles.map(f => `avatars/${user.id}/${f.name}`));
@@ -101,6 +103,7 @@ const Perfil = () => {
       toast({ title: "Erro ao salvar", variant: "destructive" });
     } else {
       toast({ title: "Perfil atualizado! ✅" });
+      setShowConfirm(false);
     }
     setSaving(false);
   };
@@ -214,14 +217,32 @@ const Perfil = () => {
             </div>
 
             {gestor && (
-              <Button onClick={handleSave} disabled={saving} className="w-full gap-2 rounded-xl" size="lg">
-                <Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar Alterações"}
+              <Button onClick={() => setShowConfirm(true)} className="w-full gap-2 rounded-xl" size="lg">
+                <Save className="h-4 w-4" /> Salvar Alterações
               </Button>
             )}
           </div>
         </main>
         <Footer />
       </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirmar Alterações</DialogTitle>
+            <DialogDescription>
+              Deseja salvar as alterações no seu perfil?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowConfirm(false)} className="rounded-xl">Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving} className="rounded-xl">
+              {saving ? "Salvando..." : "Confirmar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 };

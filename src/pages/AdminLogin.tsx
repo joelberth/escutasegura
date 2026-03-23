@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Shield, LogIn } from "lucide-react";
+import { Shield, LogIn, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -13,6 +16,9 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +33,6 @@ const AdminLogin = () => {
       return;
     }
 
-    // Check if user has admin role
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: "Erro de autenticação", variant: "destructive" });
@@ -44,7 +49,6 @@ const AdminLogin = () => {
       return;
     }
 
-    // Check if approved gestor
     const { data: gestorData } = await supabase
       .from("gestores")
       .select("approved")
@@ -62,6 +66,22 @@ const AdminLogin = () => {
     await supabase.auth.signOut();
     toast({ title: "Acesso negado", description: "Sua conta ainda não foi aprovada pelo administrador.", variant: "destructive" });
     setLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail.trim()) return;
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Link enviado! 📧", description: "Verifique seu e-mail para redefinir a senha." });
+      setShowReset(false);
+      setResetEmail("");
+    }
+    setResetLoading(false);
   };
 
   return (
@@ -83,7 +103,16 @@ const AdminLogin = () => {
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="gestor@escola.com" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Senha</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Senha</label>
+                <button
+                  type="button"
+                  onClick={() => { setShowReset(true); setResetEmail(email); }}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             <Button type="submit" className="w-full gap-2" disabled={loading}>
@@ -98,6 +127,32 @@ const AdminLogin = () => {
           </form>
         </div>
       </main>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={showReset} onOpenChange={setShowReset}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-primary" /> Recuperar Senha
+            </DialogTitle>
+            <DialogDescription>
+              Informe seu e-mail para receber o link de redefinição de senha.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <Input
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="rounded-xl"
+            />
+            <Button onClick={handleResetPassword} disabled={resetLoading} className="w-full rounded-xl">
+              {resetLoading ? "Enviando..." : "Enviar Link de Recuperação"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
