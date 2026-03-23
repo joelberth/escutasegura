@@ -118,7 +118,7 @@ const AdminDashboard = () => {
         const escolaNome = (gestorData.escolas as any)?.nome || null;
         setGestorEscola(escolaNome);
         setGestorId(gestorData.id);
-        fetchDenuncias(escolaNome);
+        setUserName(gestorData.nome || "Gestor");
         fetchEscolas();
       }
     });
