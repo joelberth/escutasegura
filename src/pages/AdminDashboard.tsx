@@ -98,6 +98,7 @@ const AdminDashboard = () => {
       const { data: adminRole } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
       if (adminRole) {
         setIsAdmin(true);
+        setUserName("Admin");
         fetchDenuncias();
         fetchEscolas();
         fetchPendingGestores();
