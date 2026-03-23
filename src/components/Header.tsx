@@ -48,6 +48,9 @@ const Header = () => {
           <Link to="/admin/login" onClick={() => setMenuOpen(false)}>
             <Button variant="outline" size="sm" className="w-full">Sou Gestor</Button>
           </Link>
+          <div className="pt-1">
+            <ProfileButton />
+          </div>
         </nav>
       )}
     </header>

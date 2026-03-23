@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Save, ArrowLeft, User, Mail, Phone, Shield } from "lucide-react";
+import { Camera, Save, ArrowLeft, User, Mail, Phone, Shield, KeyRound, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -27,6 +27,8 @@ const Perfil = () => {
   const [telefone, setTelefone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -106,6 +108,26 @@ const Perfil = () => {
       setShowConfirm(false);
     }
     setSaving(false);
+  };
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    setResetSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Link enviado! 📧", description: `Verifique ${user.email}` });
+      setShowPasswordReset(false);
+    }
+    setResetSending(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/admin/login");
   };
 
   if (loading) {
@@ -199,7 +221,7 @@ const Perfil = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Status</p>
-                  <p className="font-medium">{gestor?.approved ? "✅ Aprovado" : "⏳ Pendente"}</p>
+                  <p className="font-medium">{gestor?.approved ? "✅ Aprovado" : isAdmin ? "✅ Ativo" : "⏳ Pendente"}</p>
                 </div>
                 {gestor && (
                   <>
@@ -213,6 +235,29 @@ const Perfil = () => {
                     </div>
                   </>
                 )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="glass rounded-2xl p-6 space-y-3 mb-6">
+              <h3 className="font-display font-semibold flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-primary" /> Ações Rápidas
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button variant="outline" className="gap-2 rounded-xl justify-start" onClick={() => setShowPasswordReset(true)}>
+                  <Lock className="h-4 w-4" /> Trocar Senha
+                </Button>
+                <label className="inline-flex">
+                  <Button variant="outline" className="gap-2 rounded-xl justify-start w-full" asChild>
+                    <span>
+                      <Camera className="h-4 w-4" /> Trocar Foto
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
+                    </span>
+                  </Button>
+                </label>
+                <Button variant="outline" className="gap-2 rounded-xl justify-start text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" /> Sair da Conta
+                </Button>
               </div>
             </div>
 
@@ -239,6 +284,26 @@ const Perfil = () => {
             <Button variant="outline" onClick={() => setShowConfirm(false)} className="rounded-xl">Cancelar</Button>
             <Button onClick={handleSave} disabled={saving} className="rounded-xl">
               {saving ? "Salvando..." : "Confirmar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Modal */}
+      <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" /> Trocar Senha
+            </DialogTitle>
+            <DialogDescription>
+              Enviaremos um link de redefinição para <strong>{user?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowPasswordReset(false)} className="rounded-xl">Cancelar</Button>
+            <Button onClick={handlePasswordReset} disabled={resetSending} className="rounded-xl">
+              {resetSending ? "Enviando..." : "Enviar Link"}
             </Button>
           </div>
         </DialogContent>
