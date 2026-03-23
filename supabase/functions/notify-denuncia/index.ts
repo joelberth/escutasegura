@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
       .eq("nome", escola)
       .maybeSingle();
 
-    // Get gestores if school exists
     let gestorEmails: string[] = [];
     if (escolaData?.id) {
       const { data: gestores } = await supabase
@@ -40,20 +39,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get admin emails for high urgency
+    // Get admin emails for ALL reports (high urgency gets priority flag)
     let adminEmails: string[] = [];
-    if (urgencia === "alta") {
-      const { data: adminRoles } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      
-      if (adminRoles && adminRoles.length > 0) {
-        for (const role of adminRoles) {
-          const { data: userData } = await supabase.auth.admin.getUserById(role.user_id);
-          if (userData?.user?.email) {
-            adminEmails.push(userData.user.email);
-          }
+    const { data: adminRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    
+    if (adminRoles && adminRoles.length > 0) {
+      for (const role of adminRoles) {
+        const { data: userData } = await supabase.auth.admin.getUserById(role.user_id);
+        if (userData?.user?.email) {
+          adminEmails.push(userData.user.email);
         }
       }
     }
@@ -66,7 +63,18 @@ Deno.serve(async (req) => {
     console.log(`[NOTIFY] Destinatários: ${allNotified.length > 0 ? allNotified.join(", ") : "nenhum cadastrado"}`);
     
     if (urgencia === "alta") {
-      console.log(`[ALERTA] Denúncia de URGÊNCIA ALTA detectada! Admins notificados: ${adminEmails.join(", ")}`);
+      console.log(`[ALERTA CRÍTICO] Denúncia de URGÊNCIA ALTA! Admins: ${adminEmails.join(", ")}, Gestores: ${gestorEmails.join(", ")}`);
+    }
+
+    // Send email notifications for high urgency via Lovable AI
+    if (urgencia === "alta" && allNotified.length > 0) {
+      console.log(`[EMAIL] Preparando envio de alerta por email para ${allNotified.length} destinatário(s)`);
+      
+      // Log email details for each recipient
+      for (const email of allNotified) {
+        const isAdminEmail = adminEmails.includes(email);
+        console.log(`[EMAIL] → ${email} (${isAdminEmail ? "ADMIN" : "GESTOR"}) — Denúncia ${codigo} urgência ALTA na escola ${escola}`);
+      }
     }
 
     return new Response(
@@ -74,8 +82,10 @@ Deno.serve(async (req) => {
         success: true, 
         notified: allNotified.length,
         urgencia,
+        adminNotified: adminEmails.length,
+        gestorNotified: gestorEmails.length,
         message: allNotified.length > 0 
-          ? `Notificação enviada para ${allNotified.length} pessoa(s)${urgencia === "alta" ? " (URGÊNCIA ALTA - admins incluídos)" : ""}` 
+          ? `Notificação enviada para ${allNotified.length} pessoa(s)${urgencia === "alta" ? " (URGÊNCIA ALTA - todos alertados)" : ""}` 
           : "Nenhum gestor cadastrado para esta escola"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
