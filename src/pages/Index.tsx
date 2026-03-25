@@ -1,4 +1,4 @@
-import { Shield, Building2, HandHeart, MessageSquareText, ArrowRight, Target } from "lucide-react";
+import { Shield, Building2, HandHeart, MessageSquareText, ArrowRight, Target, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -73,6 +73,11 @@ const Index = () => (
             <Link to="/denunciar">
               <Button size="lg" className="w-full sm:w-auto text-base px-8 gap-2">
                 Fazer Denúncia Anônima <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/acompanhar">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 gap-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                <Search className="h-4 w-4" /> Acompanhar Denúncia
               </Button>
             </Link>
             <Link to="/admin/login">
