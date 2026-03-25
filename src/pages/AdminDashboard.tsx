@@ -26,6 +26,7 @@ import ProgressRing from "@/components/dashboard/ProgressRing";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 import ChatPanel from "@/components/dashboard/ChatPanel";
 import AdminUsuarios from "@/pages/AdminUsuarios";
+import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
 
 type Denuncia = Tables<"denuncias">;
 
