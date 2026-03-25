@@ -43,7 +43,7 @@ const Index = () => (
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-sm font-medium text-primary-foreground/90 mb-6"
+            className="inline-flex items-center gap-2 rounded-full bg-background/10 border border-background/20 px-4 py-1.5 text-sm font-medium text-primary-foreground/90 mb-6"
           >
             <Target className="h-4 w-4" /> ODS 16 — Paz, Justiça e Instituições Eficazes
           </motion.div>
