@@ -75,6 +75,11 @@ const Index = () => (
                 Fazer Denúncia Anônima <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <Link to="/acompanhar">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 gap-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                <Search className="h-4 w-4" /> Acompanhar Denúncia
+              </Button>
+            </Link>
             <Link to="/admin/login">
               <Button size="lg" variant="secondary" className="w-full sm:w-auto text-base px-8">
                 Sou Gestor
