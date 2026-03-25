@@ -1,4 +1,4 @@
-import { Shield, Building2, HandHeart, MessageSquareText, ArrowRight, Target } from "lucide-react";
+import { Shield, Building2, HandHeart, MessageSquareText, ArrowRight, Target, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
