@@ -383,6 +383,7 @@ const AdminDashboard = () => {
         <div className="p-3 border-t border-sidebar-border space-y-2">
           <div className="flex items-center justify-between px-3">
             <DarkModeToggle />
+            <NotificationsDropdown />
             <button onClick={() => navigate("/perfil")} className="p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors" title="Perfil">
               <User className="h-4 w-4" />
             </button>
