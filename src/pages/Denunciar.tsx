@@ -206,7 +206,7 @@ const Denunciar = () => {
       <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 flex items-center justify-center py-16">
+        <ConfettiCelebration trigger={true} type="submit" />
           <div className="container max-w-md text-center animate-fade-in-up">
             <div className="h-20 w-20 rounded-full bg-accent flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="h-10 w-10 text-primary" />
