@@ -49,6 +49,73 @@ export type Database = {
           },
         ]
       }
+      denuncia_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          denuncia_id: string
+          details: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          denuncia_id: string
+          details?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          denuncia_id?: string
+          details?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "denuncia_audit_log_denuncia_id_fkey"
+            columns: ["denuncia_id"]
+            isOneToOne: false
+            referencedRelation: "denuncias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      denuncia_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          denuncia_id: string
+          id: string
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          denuncia_id: string
+          id?: string
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          denuncia_id?: string
+          id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "denuncia_feedback_denuncia_id_fkey"
+            columns: ["denuncia_id"]
+            isOneToOne: true
+            referencedRelation: "denuncias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       denuncias: {
         Row: {
           arquivo_urls: string[] | null
@@ -59,7 +126,9 @@ export type Database = {
           escola: string
           id: string
           ip_address: string | null
+          latitude: number | null
           location_info: string | null
+          longitude: number | null
           resolved_at: string | null
           response_text: string | null
           status: Database["public"]["Enums"]["status_denuncia"]
@@ -75,7 +144,9 @@ export type Database = {
           escola: string
           id?: string
           ip_address?: string | null
+          latitude?: number | null
           location_info?: string | null
+          longitude?: number | null
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
@@ -91,7 +162,9 @@ export type Database = {
           escola?: string
           id?: string
           ip_address?: string | null
+          latitude?: number | null
           location_info?: string | null
+          longitude?: number | null
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
