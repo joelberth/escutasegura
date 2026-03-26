@@ -145,12 +145,28 @@ const Denunciar = () => {
       // Try to get IP and location
       let ipAddress = "Não disponível";
       let locationInfo = "Não disponível";
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+
+      // Try browser geolocation first
+      try {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: false });
+        });
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+      } catch { /* silently fail */ }
+
       try {
         const ipRes = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
         if (ipRes.ok) {
           const ipData = await ipRes.json();
           ipAddress = ipData.ip || "Não disponível";
           locationInfo = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(", ") || "Não disponível";
+          if (!latitude && ipData.latitude) {
+            latitude = ipData.latitude;
+            longitude = ipData.longitude;
+          }
         }
       } catch { /* silently fail */ }
 
