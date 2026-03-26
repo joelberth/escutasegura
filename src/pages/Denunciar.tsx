@@ -12,6 +12,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PageTransition from "@/components/PageTransition";
+import ConfettiCelebration from "@/components/ConfettiCelebration";
+import DenunciaChatbot from "@/components/DenunciaChatbot";
 
 const tipoLabels: Record<string, string> = {
   bullying: "Bullying / Assédio",
@@ -143,12 +145,28 @@ const Denunciar = () => {
       // Try to get IP and location
       let ipAddress = "Não disponível";
       let locationInfo = "Não disponível";
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+
+      // Try browser geolocation first
+      try {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: false });
+        });
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+      } catch { /* silently fail */ }
+
       try {
         const ipRes = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
         if (ipRes.ok) {
           const ipData = await ipRes.json();
           ipAddress = ipData.ip || "Não disponível";
           locationInfo = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(", ") || "Não disponível";
+          if (!latitude && ipData.latitude) {
+            latitude = ipData.latitude;
+            longitude = ipData.longitude;
+          }
         }
       } catch { /* silently fail */ }
 
@@ -162,6 +180,8 @@ const Denunciar = () => {
         ip_address: ipAddress,
         device_info: deviceInfo,
         location_info: locationInfo,
+        latitude: latitude as any,
+        longitude: longitude as any,
       });
 
       if (error) throw error;
@@ -186,6 +206,7 @@ const Denunciar = () => {
       <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Header />
+        <ConfettiCelebration trigger={true} type="submit" />
         <main className="flex-1 flex items-center justify-center py-16">
           <div className="container max-w-md text-center animate-fade-in-up">
             <div className="h-20 w-20 rounded-full bg-accent flex items-center justify-center mx-auto mb-6">
@@ -369,7 +390,7 @@ const Denunciar = () => {
         </div>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <DenunciaChatbot />
     </div>
     </PageTransition>
   );

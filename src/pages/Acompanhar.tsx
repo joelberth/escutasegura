@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Clock, CheckCircle2, AlertCircle, MessageSquare } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Clock, CheckCircle2, AlertCircle, MessageSquare, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PageTransition from "@/components/PageTransition";
+import ConfettiCelebration from "@/components/ConfettiCelebration";
+import FeedbackForm from "@/components/FeedbackForm";
+import { motion } from "framer-motion";
 
 const statusConfig = {
   pendente: { label: "Pendente", icon: Clock, className: "text-urgency-medium bg-urgency-medium/10" },
@@ -16,6 +19,7 @@ const statusConfig = {
 };
 
 type Denuncia = {
+  id: string;
   codigo_acompanhamento: string;
   tipo: string;
   escola: string;
@@ -38,16 +42,18 @@ const Acompanhar = () => {
   const [loading, setLoading] = useState(false);
   const [denuncia, setDenuncia] = useState<Denuncia | null>(null);
   const [searched, setSearched] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!codigo.trim()) return;
     setLoading(true);
     setSearched(true);
+    setShowConfetti(false);
 
     const { data, error } = await supabase
       .from("denuncias")
-      .select("codigo_acompanhamento, tipo, escola, status, response_text, created_at, resolved_at")
+      .select("id, codigo_acompanhamento, tipo, escola, status, response_text, created_at, resolved_at")
       .eq("codigo_acompanhamento", codigo.trim().toUpperCase())
       .maybeSingle();
 
@@ -56,6 +62,9 @@ const Acompanhar = () => {
       toast({ title: "Denúncia não encontrada", description: "Verifique o código e tente novamente.", variant: "destructive" });
     } else {
       setDenuncia(data as Denuncia);
+      if (data.status === "resolvida") {
+        setTimeout(() => setShowConfetti(true), 300);
+      }
     }
     setLoading(false);
   };
@@ -73,6 +82,7 @@ const Acompanhar = () => {
     <PageTransition>
     <div className="min-h-screen flex flex-col">
       <Header />
+      <ConfettiCelebration trigger={showConfetti} type="resolved" />
       <main className="flex-1 py-12 md:py-16">
         <div className="container max-w-lg">
           <div className="text-center mb-10 animate-fade-in-up">
@@ -98,7 +108,26 @@ const Acompanhar = () => {
           </form>
 
           {searched && denuncia && (
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card animate-fade-in-up space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="rounded-xl border border-border bg-card p-6 shadow-card space-y-4"
+            >
+              {/* Resolved celebration banner */}
+              {denuncia.status === "resolvida" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  transition={{ delay: 0.3 }}
+                  className="rounded-xl bg-primary/10 border border-primary/20 p-4 text-center"
+                >
+                  <PartyPopper className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <p className="font-semibold text-primary">Denúncia Resolvida! 🎉</p>
+                  <p className="text-xs text-muted-foreground mt-1">A escola tomou providências sobre esta denúncia.</p>
+                </motion.div>
+              )}
+
               <div className="flex items-center justify-between">
                 <span className="font-mono text-sm text-muted-foreground">{denuncia.codigo_acompanhamento}</span>
                 <StatusBadge status={denuncia.status} />
@@ -132,14 +161,41 @@ const Acompanhar = () => {
                   <p className="text-sm text-foreground">{denuncia.response_text}</p>
                 </div>
               )}
-            </div>
+
+              {/* Feedback for resolved */}
+              {denuncia.status === "resolvida" && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <FeedbackForm denunciaId={denuncia.id} />
+                </motion.div>
+              )}
+
+              {/* WhatsApp share */}
+              <div className="pt-2 border-t border-border">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Acompanhe minha denúncia no Escola Segura Report: ${denuncia.codigo_acompanhamento}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                >
+                  📱 Compartilhar código via WhatsApp
+                </a>
+              </div>
+            </motion.div>
           )}
 
           {searched && !denuncia && !loading && (
-            <div className="text-center py-10 text-muted-foreground animate-fade-in-up">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-10 text-muted-foreground"
+            >
               <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-50" />
               <p>Nenhuma denúncia encontrada com este código.</p>
-            </div>
+            </motion.div>
           )}
         </div>
       </main>
