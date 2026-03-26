@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Shield, Monitor, MapPin, Globe, RefreshCw, FileDown } from "lucide-react";
+import { Shield, Monitor, MapPin, Globe, RefreshCw, FileDown, Navigation, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import LogDetailModal from "@/components/dashboard/LogDetailModal";
+import { motion } from "framer-motion";
 
 type Denuncia = Tables<"denuncias">;
 
