@@ -137,52 +137,83 @@ const AdminLogs = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map((log) => (
-            <div
-              key={log.id}
-              className="rounded-xl glass p-4 shadow-card cursor-pointer hover:shadow-elevated transition-all"
-              onClick={() => setSelectedLog(log)}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <span className="font-mono text-xs font-medium bg-muted px-2 py-0.5 rounded">
-                      {log.codigo_acompanhamento}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(log.created_at).toLocaleString("pt-BR")}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      log.urgencia === "alta" ? "bg-destructive/10 text-destructive" :
-                      log.urgencia === "media" ? "bg-urgency-medium/10 text-urgency-medium" :
-                      "bg-primary/10 text-primary"
-                    }`}>
-                      {tipoLabels[log.tipo]}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      log.urgencia === "alta" ? "bg-destructive/10 text-destructive" :
-                      log.urgencia === "media" ? "bg-urgency-medium/10 text-urgency-medium" :
-                      "bg-primary/10 text-primary"
-                    }`}>
-                      {urgenciaLabels[log.urgencia]}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2 truncate max-w-xl">{log.escola}</p>
-                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <Globe className="h-3.5 w-3.5" />
-                      IP: {log.ip_address || "Não disponível"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Monitor className="h-3.5 w-3.5" />
-                      {log.device_info || "Não disponível"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {log.location_info || "Não disponível"}
-                    </span>
+            <div key={log.id} className="space-y-0">
+              <div
+                className="rounded-xl glass p-4 shadow-card cursor-pointer hover:shadow-elevated transition-all"
+                onClick={() => setSelectedLog(log)}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <span className="font-mono text-xs font-medium bg-muted px-2 py-0.5 rounded">
+                        {log.codigo_acompanhamento}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(log.created_at).toLocaleString("pt-BR")}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        log.urgencia === "alta" ? "bg-destructive/10 text-destructive" :
+                        log.urgencia === "media" ? "bg-urgency-medium/10 text-urgency-medium" :
+                        "bg-primary/10 text-primary"
+                      }`}>
+                        {tipoLabels[log.tipo]}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        log.urgencia === "alta" ? "bg-destructive/10 text-destructive" :
+                        log.urgencia === "media" ? "bg-urgency-medium/10 text-urgency-medium" :
+                        "bg-primary/10 text-primary"
+                      }`}>
+                        {urgenciaLabels[log.urgencia]}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2 truncate max-w-xl">{log.escola}</p>
+                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <Globe className="h-3.5 w-3.5" />
+                        IP: {log.ip_address || "Não disponível"}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Monitor className="h-3.5 w-3.5" />
+                        {log.device_info || "Não disponível"}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {log.location_info || "Não disponível"}
+                      </span>
+                    </div>
+                    {/* Action buttons */}
+                    <div className="flex gap-2 mt-3">
+                      {((log as any).latitude || (log.location_info && log.location_info !== "Não disponível")) && (
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={(e) => { e.stopPropagation(); openMap(log); }}>
+                          <Navigation className="h-3 w-3" /> Ver no Mapa
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={(e) => { e.stopPropagation(); fetchAuditLog(log.id); }}>
+                        <History className="h-3 w-3" /> Auditoria
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
+              {/* Audit log inline */}
+              {showAudit === log.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="ml-4 border-l-2 border-primary/20 pl-4 py-2 space-y-2"
+                >
+                  {auditLogs.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Nenhum registro de auditoria.</p>
+                  ) : (
+                    auditLogs.map((a: any) => (
+                      <div key={a.id} className="text-xs flex items-start gap-2">
+                        <span className="text-muted-foreground whitespace-nowrap">{new Date(a.created_at).toLocaleString("pt-BR")}</span>
+                        <span className="font-medium">{a.details}</span>
+                      </div>
+                    ))
+                  )}
+                </motion.div>
+              )}
             </div>
           ))}
         </div>
