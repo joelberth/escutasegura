@@ -549,6 +549,36 @@ const AdminDashboard = () => {
                 </ResponsiveContainer>
               </motion.div>
 
+              {/* Interactive line chart by category */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="rounded-2xl glass p-6 shadow-card">
+                <h3 className="font-display font-semibold mb-4">📈 Tendência por Categoria (30 dias)</h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={(() => {
+                    const days: Record<string, Record<string, number>> = {};
+                    for (let i = 29; i >= 0; i--) {
+                      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+                      const key = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+                      days[key] = { bullying: 0, estrutural: 0, comunicacao: 0, outro: 0 };
+                    }
+                    denuncias.forEach((d) => {
+                      const key = new Date(d.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+                      if (days[key]) days[key][d.tipo] = (days[key][d.tipo] || 0) + 1;
+                    });
+                    return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={4} />
+                    <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="bullying" stroke={CHART_COLORS[0]} strokeWidth={2} dot={false} name="Bullying" />
+                    <Line type="monotone" dataKey="estrutural" stroke={CHART_COLORS[1]} strokeWidth={2} dot={false} name="Estrutural" />
+                    <Line type="monotone" dataKey="comunicacao" stroke={CHART_COLORS[2]} strokeWidth={2} dot={false} name="Comunicação" />
+                    <Line type="monotone" dataKey="outro" stroke={CHART_COLORS[3]} strokeWidth={2} dot={false} name="Outro" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </motion.div>
+
               {isAdmin && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-2xl glass p-6 shadow-card">
                   <h3 className="font-display font-semibold mb-4">🏫 Top 10 Escolas</h3>
