@@ -180,6 +180,8 @@ const Denunciar = () => {
         ip_address: ipAddress,
         device_info: deviceInfo,
         location_info: locationInfo,
+        latitude: latitude as any,
+        longitude: longitude as any,
       });
 
       if (error) throw error;
