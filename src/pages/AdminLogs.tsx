@@ -34,6 +34,27 @@ const AdminLogs = () => {
 
   useEffect(() => { fetchLogs(); }, []);
 
+  const fetchAuditLog = async (denunciaId: string) => {
+    if (showAudit === denunciaId) { setShowAudit(null); return; }
+    const { data } = await supabase
+      .from("denuncia_audit_log" as any)
+      .select("*")
+      .eq("denuncia_id", denunciaId)
+      .order("created_at", { ascending: false });
+    setAuditLogs((data as any[]) || []);
+    setShowAudit(denunciaId);
+  };
+
+  const openMap = (log: Denuncia) => {
+    const lat = (log as any).latitude;
+    const lng = (log as any).longitude;
+    if (lat && lng) {
+      window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+    } else if (log.location_info && log.location_info !== "Não disponível") {
+      window.open(`https://www.google.com/maps/search/${encodeURIComponent(log.location_info)}`, "_blank");
+    }
+  };
+
   const filtered = logs.filter((l) => {
     if (!search) return true;
     const s = search.toLowerCase();
