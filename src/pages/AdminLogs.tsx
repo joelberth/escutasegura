@@ -19,6 +19,8 @@ const AdminLogs = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedLog, setSelectedLog] = useState<Denuncia | null>(null);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [showAudit, setShowAudit] = useState<string | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
