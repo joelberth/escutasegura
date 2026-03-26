@@ -622,7 +622,39 @@ const AdminDashboard = () => {
           {activeTab === "mapa" && isAdmin && (
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold">🗺️ Mapa de Denúncias</h2>
-              {Object.keys(locationData).length === 0 ? (
+              {/* Coordinate-based map links */}
+              {denuncias.filter(d => (d as any).latitude).length > 0 && (
+                <div className="rounded-2xl glass p-6 shadow-card">
+                  <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" /> Localizações com GPS
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {denuncias.filter(d => (d as any).latitude).map((d, i) => (
+                      <motion.a
+                        key={d.id}
+                        href={`https://www.google.com/maps?q=${(d as any).latitude},${(d as any).longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="rounded-xl border border-border bg-card p-3 flex items-center gap-3 hover:shadow-elevated transition-all group"
+                      >
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <MapPin className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-mono text-muted-foreground">{d.codigo_acompanhamento}</p>
+                          <p className="text-sm font-medium truncate">{d.escola}</p>
+                          <p className="text-xs text-muted-foreground">{d.location_info || "GPS disponível"}</p>
+                        </div>
+                      </motion.a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Object.keys(locationData).length === 0 && denuncias.filter(d => (d as any).latitude).length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" />
                   <p>Nenhuma denúncia com localização disponível.</p>
@@ -634,7 +666,9 @@ const AdminDashboard = () => {
                       .sort((a, b) => b[1] - a[1])
                       .map(([location, count], i) => (
                         <motion.div key={location} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                          className="rounded-2xl glass p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all">
+                          className="rounded-2xl glass p-5 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all cursor-pointer"
+                          onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(location)}`, "_blank")}
+                        >
                           <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                             <MapPin className="h-6 w-6 text-accent-foreground" />
                           </div>
@@ -660,6 +694,63 @@ const AdminDashboard = () => {
                   </div>
                 </>
               )}
+
+              {/* School Achievements */}
+              <div className="rounded-2xl glass p-6 shadow-card">
+                <h3 className="font-display font-semibold mb-4">🏅 Conquistas das Escolas</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(() => {
+                    const schoolStats: Record<string, { total: number; resolved: number; avgDays: number }> = {};
+                    denuncias.forEach((d) => {
+                      if (!schoolStats[d.escola]) schoolStats[d.escola] = { total: 0, resolved: 0, avgDays: 0 };
+                      schoolStats[d.escola].total++;
+                      if (d.status === "resolvida") {
+                        schoolStats[d.escola].resolved++;
+                        if (d.resolved_at) {
+                          const days = (new Date(d.resolved_at).getTime() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
+                          schoolStats[d.escola].avgDays += days;
+                        }
+                      }
+                    });
+
+                    return Object.entries(schoolStats)
+                      .map(([escola, stats]) => {
+                        const rate = stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0;
+                        const avgDays = stats.resolved > 0 ? Math.round(stats.avgDays / stats.resolved) : 0;
+                        const medals: string[] = [];
+                        if (rate >= 90) medals.push("🥇 Excelência");
+                        else if (rate >= 70) medals.push("🥈 Destaque");
+                        else if (rate >= 50) medals.push("🥉 Progresso");
+                        if (avgDays <= 3 && stats.resolved > 0) medals.push("⚡ Resposta Rápida");
+                        if (stats.resolved >= 10) medals.push("🏆 Veterana");
+                        return { escola, ...stats, rate, avgDays, medals };
+                      })
+                      .filter(s => s.medals.length > 0)
+                      .sort((a, b) => b.rate - a.rate)
+                      .slice(0, 9)
+                      .map((s, i) => (
+                        <motion.div
+                          key={s.escola}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="rounded-xl border border-border bg-card p-4 space-y-2"
+                        >
+                          <p className="text-sm font-medium truncate">{s.escola}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {s.medals.map((m) => (
+                              <span key={m} className="text-xs bg-accent px-2 py-0.5 rounded-full">{m}</span>
+                            ))}
+                          </div>
+                          <div className="flex gap-3 text-xs text-muted-foreground">
+                            <span>{s.rate}% resolvidas</span>
+                            {s.resolved > 0 && <span>~{s.avgDays}d resposta</span>}
+                          </div>
+                        </motion.div>
+                      ));
+                  })()}
+                </div>
+              </div>
             </div>
           )}
 
