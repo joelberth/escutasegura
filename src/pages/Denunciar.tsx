@@ -390,7 +390,7 @@ const Denunciar = () => {
         </div>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <DenunciaChatbot />
     </div>
     </PageTransition>
   );
