@@ -29,6 +29,9 @@ import AdminUsuarios from "@/pages/AdminUsuarios";
 import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
 import AgendamentoPanel from "@/components/dashboard/AgendamentoPanel";
 import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
+import GlobalSearch from "@/components/dashboard/GlobalSearch";
+import SlaIndicator from "@/components/dashboard/SlaIndicator";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
 
 type Denuncia = Tables<"denuncias">;
 
