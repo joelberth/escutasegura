@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Shield, Upload, CheckCircle2, Copy, Search } from "lucide-react";
+import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
