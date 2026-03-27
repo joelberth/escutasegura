@@ -342,18 +342,19 @@ const Denunciar = () => {
             {/* Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Evidências (opcional — máx. 3 arquivos)</label>
-              <div className="rounded-xl border-2 border-dashed border-border hover:border-primary/40 transition-colors p-6 text-center">
+              <label className="block rounded-xl border-2 border-dashed border-border hover:border-primary/40 transition-colors p-6 text-center cursor-pointer">
                 <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground mb-2">Arraste arquivos ou clique para selecionar</p>
+                <p className="text-xs text-muted-foreground">Imagens (JPG, PNG, GIF, WebP) e PDF — máx. 10MB cada</p>
                 <input
                   type="file"
-                  accept="image/*,.pdf"
+                  accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
                   multiple
                   onChange={handleFileChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  style={{ position: "relative" }}
+                  className="hidden"
+                  aria-label="Selecionar arquivos de evidência"
                 />
-              </div>
+              </label>
               {files.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {files.map((f, i) => (
