@@ -101,8 +101,12 @@ const Denunciar = () => {
     e.preventDefault();
     const trimmedEscola = escola.trim();
     const trimmedDescricao = descricao.trim();
-    if (!tipo || !trimmedEscola || !trimmedDescricao || !aceito) {
+    if (!tipo || !trimmedEscola || !trimmedDescricao) {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (!aceito) {
+      toast({ title: "Você precisa aceitar o Termo de Confidencialidade para enviar a denúncia.", variant: "destructive" });
       return;
     }
     if (trimmedDescricao.length < 10) {
