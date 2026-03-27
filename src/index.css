@@ -148,6 +148,34 @@
   }
 }
 
+/* High contrast mode */
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --primary: 142 100% 20%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 0 0% 90%;
+  --muted-foreground: 0 0% 20%;
+  --border: 0 0% 0%;
+  --accent: 142 100% 85%;
+  --accent-foreground: 0 0% 0%;
+}
+.high-contrast.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --primary: 142 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 80%;
+  --border: 0 0% 100%;
+  --accent: 142 100% 25%;
+  --accent-foreground: 0 0% 100%;
+}
+
 @layer utilities {
   .animate-count {
     animation: countUp 2s ease-out forwards;

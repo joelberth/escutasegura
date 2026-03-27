@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 import ChatPanel from "@/components/dashboard/ChatPanel";
 import AdminUsuarios from "@/pages/AdminUsuarios";
 import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
+import AgendamentoPanel from "@/components/dashboard/AgendamentoPanel";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -40,7 +41,7 @@ const tipoGestorLabels: Record<string, string> = {
 
 const CHART_COLORS = ["hsl(142, 73%, 28%)", "hsl(226, 72%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)"];
 
-type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "config";
+type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "agendamentos" | "config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -343,6 +344,7 @@ const AdminDashboard = () => {
     { key: "denuncias", label: "Denúncias", icon: Shield },
     ...(isAdmin ? [{ key: "escolas" as TabKey, label: "Escolas", icon: Building2 }] : []),
     ...(isAdmin ? [{ key: "aprovacoes" as TabKey, label: "Aprovações", icon: UserCheck, badge: pendingGestores.length }] : []),
+    { key: "agendamentos", label: "Agendamentos", icon: Calendar },
     { key: "stats", label: "Estatísticas", icon: BarChart3 },
     { key: "analytics", label: "Analytics", icon: PieChartIcon },
     ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
@@ -606,6 +608,9 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AnalyticsPanel denuncias={denuncias} />}
+
+          {/* Agendamentos Tab */}
+          {activeTab === "agendamentos" && <AgendamentoPanel gestorId={gestorId} isAdmin={isAdmin} />}
 
           {/* Escolas Tab */}
           {activeTab === "escolas" && isAdmin && <AdminEscolas />}
