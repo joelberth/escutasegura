@@ -971,6 +971,25 @@ const AdminDashboard = () => {
                 <Input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Buscar escola ou código..." className="sm:max-w-xs rounded-xl" />
               </div>
 
+              {/* Bulk actions bar */}
+              {selectedIds.size > 0 && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl bg-primary/10 border border-primary/20 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-sm font-medium">{selectedIds.size} selecionada(s)</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="rounded-xl gap-1.5 text-xs" onClick={() => handleBulkStatusChange("em_analise")}>
+                      <AlertCircle className="h-3 w-3" /> Em Análise
+                    </Button>
+                    <Button size="sm" className="rounded-xl gap-1.5 text-xs" onClick={() => handleBulkStatusChange("resolvida")}>
+                      <CheckCircle2 className="h-3 w-3" /> Resolver
+                    </Button>
+                    <Button size="sm" variant="ghost" className="rounded-xl text-xs" onClick={() => setSelectedIds(new Set())}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
               {loading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-2xl bg-muted animate-pulse" />)}
@@ -982,6 +1001,12 @@ const AdminDashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Select all */}
+                  <div className="flex items-center gap-2 px-1">
+                    <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll}
+                      className="h-4 w-4 rounded border-border accent-primary cursor-pointer" />
+                    <span className="text-xs text-muted-foreground">Selecionar todos ({filtered.length})</span>
+                  </div>
                   {filtered.map((d, i) => (
                     <motion.div
                       key={d.id}
