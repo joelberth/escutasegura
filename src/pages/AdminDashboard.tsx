@@ -220,7 +220,6 @@ const AdminDashboard = () => {
     fetchDenuncias(gestorEscola);
   };
 
-  const exportCSV = () => {
   const handleBulkStatusChange = async (newStatus: "em_analise" | "resolvida") => {
     if (selectedIds.size === 0) return;
     const updates = Array.from(selectedIds).map(id =>
