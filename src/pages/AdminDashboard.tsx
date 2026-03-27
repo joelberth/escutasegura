@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import ChatPanel from "@/components/dashboard/ChatPanel";
 import AdminUsuarios from "@/pages/AdminUsuarios";
 import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
 import AgendamentoPanel from "@/components/dashboard/AgendamentoPanel";
+import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -41,7 +42,7 @@ const tipoGestorLabels: Record<string, string> = {
 
 const CHART_COLORS = ["hsl(142, 73%, 28%)", "hsl(226, 72%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)"];
 
-type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "agendamentos" | "config";
+type TabKey = "denuncias" | "stats" | "analytics" | "satisfacao" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "agendamentos" | "config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -347,6 +348,7 @@ const AdminDashboard = () => {
     { key: "agendamentos", label: "Agendamentos", icon: Calendar },
     { key: "stats", label: "Estatísticas", icon: BarChart3 },
     { key: "analytics", label: "Analytics", icon: PieChartIcon },
+    { key: "satisfacao", label: "Satisfação", icon: Star },
     ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
     ...(isAdmin ? [{ key: "logs" as TabKey, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "solicitacoes" as TabKey, label: "Solicitações", icon: KeyRound, badge: accessRequests.length }] : []),
@@ -608,6 +610,9 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AnalyticsPanel denuncias={denuncias} />}
+
+          {/* Satisfação Tab */}
+          {activeTab === "satisfacao" && <SatisfactionPanel />}
 
           {/* Agendamentos Tab */}
           {activeTab === "agendamentos" && <AgendamentoPanel gestorId={gestorId} isAdmin={isAdmin} />}
