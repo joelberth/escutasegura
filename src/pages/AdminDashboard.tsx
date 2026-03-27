@@ -921,7 +921,6 @@ const AdminDashboard = () => {
                 <ActivityFeed />
               </div>
             </div>
-            </div>
           )}
 
           {/* Denúncias Tab */}
