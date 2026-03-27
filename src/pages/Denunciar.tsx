@@ -260,7 +260,7 @@ const Denunciar = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in-up-delay-1">
+          <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in-up-delay-1" aria-label="Formulário de denúncia anônima">
             {/* Demo button */}
             <div className="flex justify-end">
               <Button type="button" variant="ghost" size="sm" onClick={fillExample} className="text-xs text-muted-foreground">
