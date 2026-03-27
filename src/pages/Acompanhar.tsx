@@ -52,10 +52,7 @@ const Acompanhar = () => {
     setShowConfetti(false);
 
     const { data, error } = await supabase
-      .from("denuncias")
-      .select("id, codigo_acompanhamento, tipo, escola, status, response_text, created_at, resolved_at")
-      .eq("codigo_acompanhamento", codigo.trim().toUpperCase())
-      .maybeSingle();
+      .rpc("lookup_denuncia_by_code", { p_codigo: codigo.trim().toUpperCase() });
 
     if (error || !data) {
       setDenuncia(null);
