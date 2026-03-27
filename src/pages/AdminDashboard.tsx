@@ -348,6 +348,7 @@ const AdminDashboard = () => {
     { key: "agendamentos", label: "Agendamentos", icon: Calendar },
     { key: "stats", label: "Estatísticas", icon: BarChart3 },
     { key: "analytics", label: "Analytics", icon: PieChartIcon },
+    { key: "satisfacao", label: "Satisfação", icon: Star },
     ...(isAdmin ? [{ key: "mapa" as TabKey, label: "Mapa", icon: MapPin }] : []),
     ...(isAdmin ? [{ key: "logs" as TabKey, label: "Logs", icon: FileText }] : []),
     ...(isAdmin ? [{ key: "solicitacoes" as TabKey, label: "Solicitações", icon: KeyRound, badge: accessRequests.length }] : []),
