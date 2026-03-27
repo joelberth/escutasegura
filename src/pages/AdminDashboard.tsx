@@ -247,6 +247,8 @@ const AdminDashboard = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
     else setSelectedIds(new Set(filtered.map(d => d.id)));
   };
+
+  const exportCSV = () => {
     const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
     const rows = filtered.map((d) =>
       `${d.codigo_acompanhamento},${d.tipo},"${d.escola.replace(/"/g, '""')}",${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
