@@ -382,6 +382,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_denuncia_by_code: {
+        Args: { p_codigo: string }
+        Returns: {
+          codigo_acompanhamento: string
+          created_at: string
+          descricao: string
+          escola: string
+          id: string
+          resolved_at: string
+          response_text: string
+          status: Database["public"]["Enums"]["status_denuncia"]
+          tipo: Database["public"]["Enums"]["tipo_denuncia"]
+          urgencia: Database["public"]["Enums"]["nivel_urgencia"]
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

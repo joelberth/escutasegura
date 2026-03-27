@@ -52,17 +52,16 @@ const Acompanhar = () => {
     setShowConfetti(false);
 
     const { data, error } = await supabase
-      .from("denuncias")
-      .select("id, codigo_acompanhamento, tipo, escola, status, response_text, created_at, resolved_at")
-      .eq("codigo_acompanhamento", codigo.trim().toUpperCase())
-      .maybeSingle();
+      .rpc("lookup_denuncia_by_code", { p_codigo: codigo.trim().toUpperCase() });
 
-    if (error || !data) {
+    const row = Array.isArray(data) ? data[0] : data;
+
+    if (error || !row) {
       setDenuncia(null);
       toast({ title: "Denúncia não encontrada", description: "Verifique o código e tente novamente.", variant: "destructive" });
     } else {
-      setDenuncia(data as Denuncia);
-      if (data.status === "resolvida") {
+      setDenuncia(row as unknown as Denuncia);
+      if (row.status === "resolvida") {
         setTimeout(() => setShowConfetti(true), 300);
       }
     }
