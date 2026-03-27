@@ -187,7 +187,8 @@ const Denunciar = () => {
         location_info: locationInfo,
         latitude: latitude as any,
         longitude: longitude as any,
-      });
+        termo_aceito: true,
+      } as any);
 
       if (error) throw error;
 
