@@ -173,16 +173,30 @@ const Acompanhar = () => {
                 </motion.div>
               )}
 
-              {/* WhatsApp share */}
-              <div className="pt-2 border-t border-border">
+              {/* WhatsApp notification */}
+              <div className="pt-3 border-t border-border flex flex-col sm:flex-row gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Acompanhe minha denúncia no Escola Segura Report: ${denuncia.codigo_acompanhamento}`)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    `📋 *Escola Segura Report*\n\nCódigo: ${denuncia.codigo_acompanhamento}\nStatus: ${statusConfig[denuncia.status].label}\nEscola: ${denuncia.escola}\n${denuncia.status === "resolvida" ? "✅ Denúncia resolvida!" : "⏳ Aguardando providências"}\n\nAcompanhe em: ${window.location.origin}/acompanhar`
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[hsl(142,73%,28%)] text-primary-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+                  aria-label="Compartilhar status via WhatsApp"
                 >
-                  📱 Compartilhar código via WhatsApp
+                  📱 Compartilhar via WhatsApp
                 </a>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => {
+                    navigator.clipboard.writeText(denuncia.codigo_acompanhamento);
+                    toast({ title: "Código copiado! 📋" });
+                  }}
+                >
+                  Copiar Código
+                </Button>
               </div>
             </motion.div>
           )}
