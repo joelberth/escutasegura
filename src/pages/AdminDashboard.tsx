@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,9 @@ import AdminUsuarios from "@/pages/AdminUsuarios";
 import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
 import AgendamentoPanel from "@/components/dashboard/AgendamentoPanel";
 import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
+import GlobalSearch from "@/components/dashboard/GlobalSearch";
+import SlaIndicator from "@/components/dashboard/SlaIndicator";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -57,6 +60,7 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterEscola, setFilterEscola] = useState("all");
   const [searchText, setSearchText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdmin, setIsAdmin] = useState(false);
   const [gestorEscola, setGestorEscola] = useState<string | null>(null);
   const [gestorId, setGestorId] = useState<string | null>(null);
@@ -216,6 +220,33 @@ const AdminDashboard = () => {
     fetchDenuncias(gestorEscola);
   };
 
+  const handleBulkStatusChange = async (newStatus: "em_analise" | "resolvida") => {
+    if (selectedIds.size === 0) return;
+    const updates = Array.from(selectedIds).map(id =>
+      supabase.from("denuncias").update({
+        status: newStatus,
+        ...(newStatus === "resolvida" ? { resolved_at: new Date().toISOString() } : {}),
+      }).eq("id", id)
+    );
+    await Promise.all(updates);
+    toast({ title: `${selectedIds.size} denúncia(s) atualizada(s) ✅` });
+    setSelectedIds(new Set());
+    fetchDenuncias(gestorEscola);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map(d => d.id)));
+  };
+
   const exportCSV = () => {
     const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
     const rows = filtered.map((d) =>
@@ -358,12 +389,24 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen flex bg-background">
+      <GlobalSearch
+        denuncias={denuncias}
+        onSelect={(d) => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); setActiveTab("denuncias"); }}
+        onNavigate={(tab) => setActiveTab(tab as TabKey)}
+      />
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
           <Shield className="h-6 w-6 text-sidebar-primary" />
           <span className="font-display font-bold text-sm">Escola Segura Report</span>
         </div>
+        <button
+          onClick={() => { const e = new KeyboardEvent("keydown", { key: "k", ctrlKey: true }); document.dispatchEvent(e); }}
+          className="mx-3 mt-2 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-sidebar-border text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors"
+        >
+          <Search className="h-3.5 w-3.5" /> Buscar...
+          <kbd className="ml-auto text-[10px] bg-sidebar-accent px-1.5 py-0.5 rounded">⌘K</kbd>
+        </button>
         <nav className="flex-1 p-3 space-y-1">
           {sidebarItems.map((item) => (
             <button
@@ -425,6 +468,12 @@ const AdminDashboard = () => {
             <Shield className="h-5 w-5 text-primary" /> Painel
           </div>
           <div className="flex items-center gap-1">
+            <button onClick={() => {
+              const event = new KeyboardEvent("keydown", { key: "k", ctrlKey: true });
+              document.dispatchEvent(event);
+            }} className="p-2 rounded-lg hover:bg-accent transition-colors" title="Buscar (Ctrl+K)">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </button>
             <NotificationsDropdown />
             <DarkModeToggle />
           </div>
@@ -862,11 +911,14 @@ const AdminDashboard = () => {
                     {permission === "granted" ? "Ativo ✅" : "Ativar"}
                   </Button>
                 </div>
-                <div className="border-t border-border pt-4">
+                <div className="border-t border-border pt-4 space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Mais configurações estarão disponíveis em breve.
+                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs">Ctrl+K</kbd> para busca rápida
                   </p>
                 </div>
+              </div>
+              <div className="rounded-2xl glass p-6 shadow-card">
+                <ActivityFeed />
               </div>
             </div>
           )}
@@ -923,6 +975,25 @@ const AdminDashboard = () => {
                 <Input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Buscar escola ou código..." className="sm:max-w-xs rounded-xl" />
               </div>
 
+              {/* Bulk actions bar */}
+              {selectedIds.size > 0 && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl bg-primary/10 border border-primary/20 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-sm font-medium">{selectedIds.size} selecionada(s)</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="rounded-xl gap-1.5 text-xs" onClick={() => handleBulkStatusChange("em_analise")}>
+                      <AlertCircle className="h-3 w-3" /> Em Análise
+                    </Button>
+                    <Button size="sm" className="rounded-xl gap-1.5 text-xs" onClick={() => handleBulkStatusChange("resolvida")}>
+                      <CheckCircle2 className="h-3 w-3" /> Resolver
+                    </Button>
+                    <Button size="sm" variant="ghost" className="rounded-xl text-xs" onClick={() => setSelectedIds(new Set())}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
               {loading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-2xl bg-muted animate-pulse" />)}
@@ -934,6 +1005,12 @@ const AdminDashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Select all */}
+                  <div className="flex items-center gap-2 px-1">
+                    <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll}
+                      className="h-4 w-4 rounded border-border accent-primary cursor-pointer" />
+                    <span className="text-xs text-muted-foreground">Selecionar todos ({filtered.length})</span>
+                  </div>
                   {filtered.map((d, i) => (
                     <motion.div
                       key={d.id}
@@ -945,29 +1022,34 @@ const AdminDashboard = () => {
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                            <span className="font-mono text-xs font-semibold bg-muted px-2 py-0.5 rounded-lg">{d.codigo_acompanhamento}</span>
-                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                              d.status === "pendente" ? "bg-urgency-medium/15 text-urgency-medium" :
-                              d.status === "em_analise" ? "bg-secondary/15 text-secondary" :
-                              "bg-primary/15 text-primary"
-                            }`}>
-                              {d.status === "pendente" && <Clock className="h-3 w-3 inline mr-1" />}
-                              {d.status === "em_analise" && <AlertCircle className="h-3 w-3 inline mr-1" />}
-                              {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3 inline mr-1" />}
-                              {statusLabels[d.status]}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              d.urgencia === "alta" ? "bg-destructive/15 text-destructive" :
-                              d.urgencia === "media" ? "bg-urgency-medium/15 text-urgency-medium" :
-                              "bg-primary/15 text-primary"
-                            }`}>
-                              {urgenciaLabels[d.urgencia]}
-                            </span>
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <input type="checkbox" checked={selectedIds.has(d.id)} onChange={() => toggleSelect(d.id)}
+                            className="h-4 w-4 mt-1 rounded border-border accent-primary cursor-pointer flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                              <span className="font-mono text-xs font-semibold bg-muted px-2 py-0.5 rounded-lg">{d.codigo_acompanhamento}</span>
+                              <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                                d.status === "pendente" ? "bg-urgency-medium/15 text-urgency-medium" :
+                                d.status === "em_analise" ? "bg-secondary/15 text-secondary" :
+                                "bg-primary/15 text-primary"
+                              }`}>
+                                {d.status === "pendente" && <Clock className="h-3 w-3 inline mr-1" />}
+                                {d.status === "em_analise" && <AlertCircle className="h-3 w-3 inline mr-1" />}
+                                {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                                {statusLabels[d.status]}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                d.urgencia === "alta" ? "bg-destructive/15 text-destructive" :
+                                d.urgencia === "media" ? "bg-urgency-medium/15 text-urgency-medium" :
+                                "bg-primary/15 text-primary"
+                              }`}>
+                                {urgenciaLabels[d.urgencia]}
+                              </span>
+                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} />
+                            </div>
+                            <p className="text-sm font-medium truncate">{d.escola}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
                           </div>
-                          <p className="text-sm font-medium truncate">{d.escola}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="sm" onClick={() => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); }} className="rounded-xl">
