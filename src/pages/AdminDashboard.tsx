@@ -460,6 +460,12 @@ const AdminDashboard = () => {
             <Shield className="h-5 w-5 text-primary" /> Painel
           </div>
           <div className="flex items-center gap-1">
+            <button onClick={() => {
+              const event = new KeyboardEvent("keydown", { key: "k", ctrlKey: true });
+              document.dispatchEvent(event);
+            }} className="p-2 rounded-lg hover:bg-accent transition-colors" title="Buscar (Ctrl+K)">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </button>
             <NotificationsDropdown />
             <DarkModeToggle />
           </div>
