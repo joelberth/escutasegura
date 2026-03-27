@@ -911,12 +911,16 @@ const AdminDashboard = () => {
                     {permission === "granted" ? "Ativo ✅" : "Ativar"}
                   </Button>
                 </div>
-                <div className="border-t border-border pt-4">
+                <div className="border-t border-border pt-4 space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Mais configurações estarão disponíveis em breve.
+                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs">Ctrl+K</kbd> para busca rápida
                   </p>
                 </div>
               </div>
+              <div className="rounded-2xl glass p-6 shadow-card">
+                <ActivityFeed />
+              </div>
+            </div>
             </div>
           )}
 
