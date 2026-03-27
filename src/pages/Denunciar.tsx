@@ -270,7 +270,7 @@ const Denunciar = () => {
 
             {/* Tipo */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo de Denúncia *</label>
+              <label className="text-sm font-medium" id="tipo-label">Tipo de Denúncia *</label>
               <Select value={tipo} onValueChange={setTipo}>
                 <SelectTrigger><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
                 <SelectContent>
