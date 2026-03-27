@@ -1019,29 +1019,34 @@ const AdminDashboard = () => {
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                            <span className="font-mono text-xs font-semibold bg-muted px-2 py-0.5 rounded-lg">{d.codigo_acompanhamento}</span>
-                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                              d.status === "pendente" ? "bg-urgency-medium/15 text-urgency-medium" :
-                              d.status === "em_analise" ? "bg-secondary/15 text-secondary" :
-                              "bg-primary/15 text-primary"
-                            }`}>
-                              {d.status === "pendente" && <Clock className="h-3 w-3 inline mr-1" />}
-                              {d.status === "em_analise" && <AlertCircle className="h-3 w-3 inline mr-1" />}
-                              {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3 inline mr-1" />}
-                              {statusLabels[d.status]}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              d.urgencia === "alta" ? "bg-destructive/15 text-destructive" :
-                              d.urgencia === "media" ? "bg-urgency-medium/15 text-urgency-medium" :
-                              "bg-primary/15 text-primary"
-                            }`}>
-                              {urgenciaLabels[d.urgencia]}
-                            </span>
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <input type="checkbox" checked={selectedIds.has(d.id)} onChange={() => toggleSelect(d.id)}
+                            className="h-4 w-4 mt-1 rounded border-border accent-primary cursor-pointer flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                              <span className="font-mono text-xs font-semibold bg-muted px-2 py-0.5 rounded-lg">{d.codigo_acompanhamento}</span>
+                              <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                                d.status === "pendente" ? "bg-urgency-medium/15 text-urgency-medium" :
+                                d.status === "em_analise" ? "bg-secondary/15 text-secondary" :
+                                "bg-primary/15 text-primary"
+                              }`}>
+                                {d.status === "pendente" && <Clock className="h-3 w-3 inline mr-1" />}
+                                {d.status === "em_analise" && <AlertCircle className="h-3 w-3 inline mr-1" />}
+                                {d.status === "resolvida" && <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                                {statusLabels[d.status]}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                d.urgencia === "alta" ? "bg-destructive/15 text-destructive" :
+                                d.urgencia === "media" ? "bg-urgency-medium/15 text-urgency-medium" :
+                                "bg-primary/15 text-primary"
+                              }`}>
+                                {urgenciaLabels[d.urgencia]}
+                              </span>
+                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} />
+                            </div>
+                            <p className="text-sm font-medium truncate">{d.escola}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
                           </div>
-                          <p className="text-sm font-medium truncate">{d.escola}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="sm" onClick={() => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); }} className="rounded-xl">
