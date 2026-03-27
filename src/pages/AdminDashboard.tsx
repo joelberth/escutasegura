@@ -41,7 +41,7 @@ const tipoGestorLabels: Record<string, string> = {
 
 const CHART_COLORS = ["hsl(142, 73%, 28%)", "hsl(226, 72%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)"];
 
-type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "config";
+type TabKey = "denuncias" | "stats" | "analytics" | "escolas" | "aprovacoes" | "logs" | "mapa" | "solicitacoes" | "usuarios" | "agendamentos" | "config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
