@@ -54,12 +54,14 @@ const Acompanhar = () => {
     const { data, error } = await supabase
       .rpc("lookup_denuncia_by_code", { p_codigo: codigo.trim().toUpperCase() });
 
-    if (error || !data) {
+    const row = Array.isArray(data) ? data[0] : data;
+
+    if (error || !row) {
       setDenuncia(null);
       toast({ title: "Denúncia não encontrada", description: "Verifique o código e tente novamente.", variant: "destructive" });
     } else {
-      setDenuncia(data as Denuncia);
-      if (data.status === "resolvida") {
+      setDenuncia(row as unknown as Denuncia);
+      if (row.status === "resolvida") {
         setTimeout(() => setShowConfetti(true), 300);
       }
     }
