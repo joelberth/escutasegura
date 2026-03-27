@@ -368,18 +368,8 @@ const Denunciar = () => {
               )}
             </div>
 
-            {/* Aceite */}
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 p-4">
-              <Checkbox
-                id="aceito"
-                checked={aceito}
-                onCheckedChange={(checked) => setAceito(checked === true)}
-                className="mt-0.5"
-              />
-              <label htmlFor="aceito" className="text-sm text-muted-foreground cursor-pointer">
-                Aceito que esta denúncia seja anônima e será tratada com confidencialidade total.
-              </label>
-            </div>
+            {/* Aceite LGPD */}
+            <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
             <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading}>
               {loading ? "Enviando..." : (
