@@ -221,6 +221,32 @@ const AdminDashboard = () => {
   };
 
   const exportCSV = () => {
+  const handleBulkStatusChange = async (newStatus: "em_analise" | "resolvida") => {
+    if (selectedIds.size === 0) return;
+    const updates = Array.from(selectedIds).map(id =>
+      supabase.from("denuncias").update({
+        status: newStatus,
+        ...(newStatus === "resolvida" ? { resolved_at: new Date().toISOString() } : {}),
+      }).eq("id", id)
+    );
+    await Promise.all(updates);
+    toast({ title: `${selectedIds.size} denúncia(s) atualizada(s) ✅` });
+    setSelectedIds(new Set());
+    fetchDenuncias(gestorEscola);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map(d => d.id)));
+  };
     const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
     const rows = filtered.map((d) =>
       `${d.codigo_acompanhamento},${d.tipo},"${d.escola.replace(/"/g, '""')}",${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
