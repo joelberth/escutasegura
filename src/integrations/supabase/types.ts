@@ -186,6 +186,7 @@ export type Database = {
           resolved_at: string | null
           response_text: string | null
           status: Database["public"]["Enums"]["status_denuncia"]
+          termo_aceito: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia: Database["public"]["Enums"]["nivel_urgencia"]
         }
@@ -204,6 +205,7 @@ export type Database = {
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
+          termo_aceito?: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
         }
@@ -222,6 +224,7 @@ export type Database = {
           resolved_at?: string | null
           response_text?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
+          termo_aceito?: boolean
           tipo?: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
         }

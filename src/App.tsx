@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import GestorRegistro from "./pages/GestorRegistro";
 import Perfil from "./pages/Perfil";
 import ResetPassword from "./pages/ResetPassword";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/gestor/registro" element={<GestorRegistro />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

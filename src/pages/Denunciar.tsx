@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Shield, Upload, CheckCircle2, Copy, Search } from "lucide-react";
+import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -40,6 +41,91 @@ function generateCode() {
   const num = Math.floor(1000 + Math.random() * 9000);
   return `DEN-${year}-${num}`;
 }
+
+const termoSections = [
+  { icon: Shield, title: "Anonimato Total", text: "Nenhum dado pessoal é coletado. A plataforma foi projetada para tornar impossível a identificação do denunciante." },
+  { icon: Lock, title: "Confidencialidade", text: "Acesso restrito apenas à gestão autorizada. Nenhum dado é compartilhado com terceiros." },
+  { icon: FileText, title: "Finalidade", text: "Os dados são utilizados apenas para investigação interna e melhoria contínua do ambiente escolar." },
+  { icon: Scale, title: "Responsabilidade", text: "Declaro que as informações são verdadeiras. Denúncias de má-fé podem ter consequências legais." },
+  { icon: Database, title: "LGPD", text: "Tratamento conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018)." },
+];
+
+const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito: (v: boolean) => void }) => {
+  const [showTermo, setShowTermo] = useState(false);
+
+  return (
+    <>
+      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/30 p-5">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="aceito"
+            checked={aceito}
+            onCheckedChange={(checked) => setAceito(checked === true)}
+            className="mt-1 h-5 w-5 border-primary/40 data-[state=checked]:bg-primary"
+          />
+          <div>
+            <label htmlFor="aceito" className="text-sm leading-relaxed cursor-pointer text-foreground">
+              <Shield className="h-4 w-4 inline text-primary mr-1 -mt-0.5" />
+              Aceito que esta denúncia seja totalmente anônima e declaro estar ciente de que será tratada com{" "}
+              <strong>confidencialidade total</strong> pela gestão da escola, respeitando a{" "}
+              <strong>LGPD</strong>. Entendo que a plataforma não coleta nenhum dado pessoal meu e que denúncias de má-fé podem ter consequências legais.{" "}
+              Li e concordo com o{" "}
+              <button type="button" onClick={() => setShowTermo(true)} className="text-primary font-semibold underline underline-offset-2 hover:text-primary/80 transition-colors">
+                Termo de Aceite e Confidencialidade
+              </button>.
+            </label>
+            <div className="flex items-center gap-3 mt-3">
+              <button type="button" onClick={() => setShowTermo(true)} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                <Eye className="h-3 w-3" /> Ver Termo Completo
+              </button>
+              <Link to="/politica-de-privacidade" className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors">
+                <Lock className="h-3 w-3" /> Política de Privacidade
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Dialog open={showTermo} onOpenChange={setShowTermo}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Shield className="h-5 w-5 text-primary" />
+              Termo de Aceite e Confidencialidade
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 mt-2">
+            {termoSections.map((s, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <s.icon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold">{i + 1}. {s.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{s.text}</p>
+                </div>
+              </div>
+            ))}
+            <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 text-center">
+              <Lock className="h-6 w-6 text-primary mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">
+                Ao marcar o checkbox e enviar a denúncia, você concorda com todos os termos acima.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button className="flex-1 rounded-xl gap-2" onClick={() => { setAceito(true); setShowTermo(false); }}>
+                <CheckCircle2 className="h-4 w-4" /> Aceitar Termos
+              </Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => setShowTermo(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 const Denunciar = () => {
   const { toast } = useToast();
@@ -100,8 +186,12 @@ const Denunciar = () => {
     e.preventDefault();
     const trimmedEscola = escola.trim();
     const trimmedDescricao = descricao.trim();
-    if (!tipo || !trimmedEscola || !trimmedDescricao || !aceito) {
+    if (!tipo || !trimmedEscola || !trimmedDescricao) {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (!aceito) {
+      toast({ title: "Você precisa aceitar o Termo de Confidencialidade para enviar a denúncia.", variant: "destructive" });
       return;
     }
     if (trimmedDescricao.length < 10) {
@@ -182,7 +272,8 @@ const Denunciar = () => {
         location_info: locationInfo,
         latitude: latitude as any,
         longitude: longitude as any,
-      });
+        termo_aceito: true,
+      } as any);
 
       if (error) throw error;
 
@@ -367,18 +458,8 @@ const Denunciar = () => {
               )}
             </div>
 
-            {/* Aceite */}
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 p-4">
-              <Checkbox
-                id="aceito"
-                checked={aceito}
-                onCheckedChange={(checked) => setAceito(checked === true)}
-                className="mt-0.5"
-              />
-              <label htmlFor="aceito" className="text-sm text-muted-foreground cursor-pointer">
-                Aceito que esta denúncia seja anônima e será tratada com confidencialidade total.
-              </label>
-            </div>
+            {/* Aceite LGPD */}
+            <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
             <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading}>
               {loading ? "Enviando..." : (
