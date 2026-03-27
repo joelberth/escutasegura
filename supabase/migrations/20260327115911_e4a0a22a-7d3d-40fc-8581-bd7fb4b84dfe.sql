@@ -1,0 +1,1 @@
+ALTER TABLE public.denuncias ADD COLUMN IF NOT EXISTS termo_aceito boolean NOT NULL DEFAULT true;
