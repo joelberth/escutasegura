@@ -611,6 +611,9 @@ const AdminDashboard = () => {
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AnalyticsPanel denuncias={denuncias} />}
 
+          {/* Satisfação Tab */}
+          {activeTab === "satisfacao" && <SatisfactionPanel />}
+
           {/* Agendamentos Tab */}
           {activeTab === "agendamentos" && <AgendamentoPanel gestorId={gestorId} isAdmin={isAdmin} />}
 
