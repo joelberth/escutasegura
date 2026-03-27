@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import GestorRegistro from "./pages/GestorRegistro";
 import Perfil from "./pages/Perfil";
 import ResetPassword from "./pages/ResetPassword";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
