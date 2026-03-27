@@ -60,6 +60,7 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterEscola, setFilterEscola] = useState("all");
   const [searchText, setSearchText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdmin, setIsAdmin] = useState(false);
   const [gestorEscola, setGestorEscola] = useState<string | null>(null);
   const [gestorId, setGestorId] = useState<string | null>(null);
