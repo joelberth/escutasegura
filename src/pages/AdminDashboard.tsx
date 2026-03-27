@@ -388,6 +388,11 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen flex bg-background">
+      <GlobalSearch
+        denuncias={denuncias}
+        onSelect={(d) => { setSelectedDenuncia(d); setResponseText(d.response_text || ""); setActiveTab("denuncias"); }}
+        onNavigate={(tab) => setActiveTab(tab as TabKey)}
+      />
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
