@@ -399,6 +399,13 @@ const AdminDashboard = () => {
           <Shield className="h-6 w-6 text-sidebar-primary" />
           <span className="font-display font-bold text-sm">Escola Segura Report</span>
         </div>
+        <button
+          onClick={() => { const e = new KeyboardEvent("keydown", { key: "k", ctrlKey: true }); document.dispatchEvent(e); }}
+          className="mx-3 mt-2 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-sidebar-border text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors"
+        >
+          <Search className="h-3.5 w-3.5" /> Buscar...
+          <kbd className="ml-auto text-[10px] bg-sidebar-accent px-1.5 py-0.5 rounded">⌘K</kbd>
+        </button>
         <nav className="flex-1 p-3 space-y-1">
           {sidebarItems.map((item) => (
             <button
