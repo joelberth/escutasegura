@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          created_at: string
+          data_hora: string
+          denuncia_id: string | null
+          descricao: string | null
+          duracao_minutos: number
+          gestor_id: string | null
+          id: string
+          status: string
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          data_hora: string
+          denuncia_id?: string | null
+          descricao?: string | null
+          duracao_minutos?: number
+          gestor_id?: string | null
+          id?: string
+          status?: string
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          data_hora?: string
+          denuncia_id?: string | null
+          descricao?: string | null
+          duracao_minutos?: number
+          gestor_id?: string | null
+          id?: string
+          status?: string
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_denuncia_id_fkey"
+            columns: ["denuncia_id"]
+            isOneToOne: false
+            referencedRelation: "denuncias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string
