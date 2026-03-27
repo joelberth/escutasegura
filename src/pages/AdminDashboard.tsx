@@ -28,6 +28,7 @@ import ChatPanel from "@/components/dashboard/ChatPanel";
 import AdminUsuarios from "@/pages/AdminUsuarios";
 import NotificationsDropdown from "@/components/dashboard/NotificationsDropdown";
 import AgendamentoPanel from "@/components/dashboard/AgendamentoPanel";
+import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
 
 type Denuncia = Tables<"denuncias">;
 
