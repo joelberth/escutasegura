@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import * as XLSX from "xlsx";
 import {
   Pagination,
   PaginationContent,
