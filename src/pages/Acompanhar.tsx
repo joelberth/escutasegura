@@ -94,17 +94,16 @@ const Acompanhar = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSearch} className="flex gap-2 mb-12 animate-fade-in-up-delay-1 p-2 rounded-2xl border border-border bg-card shadow-soft items-center">
+          <form onSubmit={handleSearch} className="flex gap-2 mb-10 animate-fade-in-up-delay-1 p-2 rounded-2xl border border-border bg-card shadow-soft items-center transition-all focus-within:ring-2 focus-within:ring-primary/20">
             <div className="flex-1 relative group">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
-                placeholder="Ex: DEN-2026-7842"
-                className="pl-10 h-12 border-none focus-visible:ring-0 text-center font-mono text-lg tracking-wider"
+                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                placeholder="EX: DEN-2026-ABC12345"
+                className="h-12 border-none focus-visible:ring-0 text-center font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans uppercase"
               />
             </div>
-            <Button type="submit" disabled={loading} size="lg" className="rounded-xl h-12 px-6 gap-2">
+            <Button type="submit" disabled={loading} size="lg" className="rounded-xl h-12 px-8 gap-2 shadow-lg shadow-primary/20">
               {loading ? "..." : <><Search className="h-4 w-4" /> Buscar</>}
             </Button>
           </form>
