@@ -81,6 +81,45 @@ const AdminDashboard = () => {
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetTimeout = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      handleLogout();
+      toast({ title: "Sessão expirada", description: "Você foi desconectado por inatividade.", variant: "destructive" });
+    }, 15 * 60 * 1000); // 15 minutes
+  }, []);
+
+  const playAlertSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.2);
+    } catch (e) { console.error("Could not play sound", e); }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resetTimeout);
+    window.addEventListener("keydown", resetTimeout);
+    window.addEventListener("mousedown", resetTimeout);
+    window.addEventListener("touchstart", resetTimeout);
+    resetTimeout();
+    return () => {
+      window.removeEventListener("mousemove", resetTimeout);
+      window.removeEventListener("keydown", resetTimeout);
+      window.removeEventListener("mousedown", resetTimeout);
+      window.removeEventListener("touchstart", resetTimeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [resetTimeout]);
 
   const fetchDenuncias = async (escolaFilter?: string | null) => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
