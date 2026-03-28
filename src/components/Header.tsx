@@ -9,6 +9,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { settings } = useSiteSettings();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
