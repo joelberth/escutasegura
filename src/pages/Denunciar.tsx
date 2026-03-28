@@ -136,13 +136,17 @@ const Denunciar = () => {
   const [escolaSearch, setEscolaSearch] = useState("");
   const [escolas, setEscolas] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [descricao, setDescricao] = useState("");
+  const [descricao, setDescricao] = useState(() => localStorage.getItem("denuncia_draft_descricao") || "");
   const [urgencia, setUrgencia] = useState<"baixa" | "media" | "alta">("media");
   const [aceito, setAceito] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [codigo, setCodigo] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("denuncia_draft_descricao", descricao);
+  }, [descricao]);
 
   useEffect(() => {
     supabase.from("escolas").select("nome").then(({ data }) => {
