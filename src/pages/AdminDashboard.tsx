@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet,
+  Image as ImageIcon, Loader2
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
 import GlobalSearch from "@/components/dashboard/GlobalSearch";
 import SlaIndicator from "@/components/dashboard/SlaIndicator";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 type Denuncia = Tables<"denuncias">;
 
@@ -62,6 +64,7 @@ const AdminDashboard = () => {
   const { permission, supported, requestPermission, sendNotification } = usePushNotifications();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSiteSettings();
   const [userId, setUserId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const [activeTab, setActiveTab] = useState<TabKey>("denuncias");
@@ -82,6 +85,10 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [siteLogo, setSiteLogo] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState("");
+  const [updatingLogo, setUpdatingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetTimeout = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -148,7 +155,66 @@ const AdminDashboard = () => {
     if (data) setAccessRequests(data);
   };
 
+  const fetchSiteSettings = async () => {
+    const { data } = await supabase.from("site_settings").select("*").eq("id", "global").single();
+    if (data) {
+      setSiteLogo(data.logo_url);
+      setSiteName(data.site_name || "Escola Segura Report");
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUpdatingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('site_assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('site_assets')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq('id', 'global');
+
+      if (updateError) throw updateError;
+
+      setSiteLogo(publicUrl);
+      toast({ title: "Logomarca atualizada! ✅" });
+    } catch (error: any) {
+      toast({ title: "Erro ao atualizar logomarca", description: error.message, variant: "destructive" });
+    } finally {
+      setUpdatingLogo(false);
+    }
+  };
+
+  const handleUpdateSiteName = async () => {
+    const { error } = await supabase
+      .from('site_settings')
+      .update({ site_name: siteName, updated_at: new Date().toISOString() })
+      .eq('id', 'global');
+
+    if (error) {
+      toast({ title: "Erro ao atualizar nome do site", variant: "destructive" });
+    } else {
+      toast({ title: "Nome do site atualizado! ✅" });
+    }
+  };
+
   useEffect(() => {
+    fetchSiteSettings();
+
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate("/admin/login"); return; }
       setUserId(user.id);
@@ -512,10 +578,14 @@ const AdminDashboard = () => {
         onNavigate={(tab) => setActiveTab(tab as TabKey)}
       />
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground">
-        <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
-          <Shield className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display font-bold text-sm">Escola Segura Report</span>
+      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground h-screen sticky top-0">
+        <div className="flex items-center gap-2 p-5 border-b border-sidebar-border truncate">
+          {settings.logo_url ? (
+            <img src={settings.logo_url} alt={settings.site_name} className="h-6 w-auto" />
+          ) : (
+            <Shield className="h-6 w-6 text-sidebar-primary" />
+          )}
+          <span className="font-display font-bold text-sm truncate">{settings.site_name}</span>
         </div>
         <button
           onClick={() => { const e = new KeyboardEvent("keydown", { key: "k", ctrlKey: true }); document.dispatchEvent(e); }}
@@ -581,8 +651,13 @@ const AdminDashboard = () => {
       {/* Main */}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="md:hidden flex items-center justify-between p-3 border-b border-border gap-2">
-          <div className="flex items-center gap-2 font-display font-bold text-sm flex-shrink-0">
-            <Shield className="h-5 w-5 text-primary" /> Painel
+          <div className="flex items-center gap-2 font-display font-bold text-sm flex-shrink-0 truncate">
+            {settings.logo_url ? (
+              <img src={settings.logo_url} alt={settings.site_name} className="h-5 w-auto" />
+            ) : (
+              <Shield className="h-5 w-5 text-primary" />
+            )}
+            <span className="truncate">{settings.site_name}</span>
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => {
@@ -1011,30 +1086,92 @@ const AdminDashboard = () => {
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
               <h2 className="text-2xl font-display font-bold">⚙️ Configurações</h2>
-              <div className="rounded-2xl glass p-6 shadow-card space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Notificações Push</p>
-                    <p className="text-sm text-muted-foreground">Receba alertas no navegador</p>
+              <div className="rounded-2xl glass p-6 shadow-card space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" /> Personalização do Site
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-20 w-20 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
+                        {siteLogo ? (
+                          <img src={siteLogo} alt="Logo" className="h-full w-full object-contain" />
+                        ) : (
+                          <Shield className="h-8 w-8 text-muted-foreground/30" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <p className="text-sm font-medium">Logomarca do Site</p>
+                        <p className="text-xs text-muted-foreground">Formato PNG, JPG ou SVG. Máximo 2MB.</p>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleLogoUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={updatingLogo}
+                          className="rounded-xl h-8 text-xs"
+                        >
+                          {updatingLogo ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
+                          {siteLogo ? "Alterar Logo" : "Fazer Upload"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <label className="text-sm font-medium">Nome do Site</label>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={siteName} 
+                          onChange={(e) => setSiteName(e.target.value)}
+                          placeholder="Ex: Escola Segura Report"
+                          className="rounded-xl h-9"
+                        />
+                        <Button 
+                          size="sm" 
+                          onClick={handleUpdateSiteName}
+                          className="rounded-xl h-9 px-4"
+                        >
+                          Salvar
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    variant={permission === "granted" ? "outline" : "default"}
-                    size="sm"
-                    onClick={async () => {
-                      const granted = await requestPermission();
-                      toast({ title: granted ? "Ativado! 🔔" : "Bloqueado pelo navegador" });
-                    }}
-                    className="rounded-xl"
-                  >
-                    {permission === "granted" ? "Ativo ✅" : "Ativar"}
-                  </Button>
                 </div>
-                <div className="border-t border-border pt-4 space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs">Ctrl+K</kbd> para busca rápida
+
+                <div className="border-t border-border/50 pt-4">
+                  <h3 className="font-semibold mb-4">Preferências</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">Notificações Push</p>
+                      <p className="text-xs text-muted-foreground">Receba alertas no navegador</p>
+                    </div>
+                    <Button
+                      variant={permission === "granted" ? "outline" : "default"}
+                      size="sm"
+                      onClick={async () => {
+                        const granted = await requestPermission();
+                        toast({ title: granted ? "Ativado! 🔔" : "Bloqueado pelo navegador" });
+                      }}
+                      className="rounded-xl h-8 text-xs"
+                    >
+                      {permission === "granted" ? "Ativo ✅" : "Ativar"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 pt-4 space-y-4">
+                  <p className="text-xs text-muted-foreground italic">
+                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs not-italic">Ctrl+K</kbd> para busca rápida
                   </p>
                 </div>
               </div>
+
               <div className="rounded-2xl glass p-6 shadow-card">
                 <ActivityFeed />
               </div>

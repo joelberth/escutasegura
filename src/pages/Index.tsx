@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import PageTransition from "@/components/PageTransition";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const benefits = [
   { icon: Shield, title: "100% Anônimo", desc: "Sua identidade nunca será revelada. Garantimos total confidencialidade por design." },
@@ -37,7 +38,9 @@ const cardVariants = {
   }),
 };
 
-const Index = () => (
+const Index = () => {
+  const { settings } = useSiteSettings();
+  return (
   <PageTransition>
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -70,7 +73,7 @@ const Index = () => (
             className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto"
           >
             Milhares de estudantes brasileiros não têm um canal seguro para reportar problemas na escola. 
-            O Escola Segura Report muda isso — de forma 100% anônima e segura.
+            O {settings.site_name} muda isso — de forma 100% anônima e segura.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -111,7 +114,7 @@ const Index = () => (
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-              Por que usar o Escola Segura Report?
+              Por que usar o {settings.site_name}?
             </h2>
             <p className="text-muted-foreground italic">
               Desenvolvido com foco total na privacidade do aluno e na eficiência da gestão escolar.
@@ -283,6 +286,7 @@ const Index = () => (
       <WhatsAppButton />
     </div>
   </PageTransition>
-);
+  );
+};
 
 export default Index;

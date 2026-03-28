@@ -352,6 +352,27 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          id: string
+          logo_url: string | null
+          site_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          logo_url?: string | null
+          site_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          logo_url?: string | null
+          site_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
