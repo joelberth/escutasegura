@@ -286,6 +286,7 @@ const Index = () => {
       <WhatsAppButton />
     </div>
   </PageTransition>
-);
+  );
+};
 
 export default Index;
