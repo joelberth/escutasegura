@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { ReactNode, forwardRef } from "react";
 
 const pageVariants = {
   initial: { opacity: 0, y: 18 },
@@ -7,16 +7,21 @@ const pageVariants = {
   exit: { opacity: 0, y: -10 },
 };
 
-const PageTransition = ({ children }: { children: ReactNode }) => (
-  <motion.div
-    variants={pageVariants}
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    transition={{ duration: 0.35, ease: "easeOut" }}
-  >
-    {children}
-  </motion.div>
+const PageTransition = forwardRef<HTMLDivElement, { children: ReactNode }>(
+  ({ children }, ref) => (
+    <motion.div
+      ref={ref}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.35, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  )
 );
+
+PageTransition.displayName = "PageTransition";
 
 export default PageTransition;
