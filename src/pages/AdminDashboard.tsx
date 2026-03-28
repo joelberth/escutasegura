@@ -1089,6 +1089,11 @@ const AdminDashboard = () => {
                 <div><span className="text-muted-foreground">Tipo:</span> <span className="font-medium">{tipoLabels[selectedDenuncia.tipo]}</span></div>
                 <div><span className="text-muted-foreground">Urgência:</span> <span className="font-medium">{urgenciaLabels[selectedDenuncia.urgencia]}</span></div>
                 <div className="col-span-2"><span className="text-muted-foreground">Escola:</span> <span className="font-medium">{selectedDenuncia.escola}</span></div>
+                {selectedDenuncia.termo_aceito && (
+                  <div className="col-span-2 flex items-center gap-1.5 text-xs text-primary font-medium bg-primary/10 w-fit px-2 py-1 rounded-full border border-primary/20">
+                    <CheckCircle2 className="h-3 w-3" /> Termo de Confidencialidade Aceito
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Descrição</p>

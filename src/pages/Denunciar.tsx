@@ -43,11 +43,11 @@ function generateCode() {
 }
 
 const termoSections = [
-  { icon: Shield, title: "Anonimato Total", text: "Nenhum dado pessoal é coletado. A plataforma foi projetada para tornar impossível a identificação do denunciante." },
+  { icon: Shield, title: "Anonimato total", text: "Nenhum dado pessoal é coletado. A plataforma foi projetada para tornar impossível a identificação do denunciante." },
   { icon: Lock, title: "Confidencialidade", text: "Acesso restrito apenas à gestão autorizada. Nenhum dado é compartilhado com terceiros." },
-  { icon: FileText, title: "Finalidade", text: "Os dados são utilizados apenas para investigação interna e melhoria contínua do ambiente escolar." },
-  { icon: Scale, title: "Responsabilidade", text: "Declaro que as informações são verdadeiras. Denúncias de má-fé podem ter consequências legais." },
-  { icon: Database, title: "LGPD", text: "Tratamento conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018)." },
+  { icon: FileText, title: "Finalidade", text: "Apenas investigação interna e melhoria contínua do ambiente escolar." },
+  { icon: Scale, title: "Responsabilidade", text: "Declaro que as informações fornecidas são verdadeiras e baseadas em fatos reais." },
+  { icon: Database, title: "LGPD", text: "Tratamento de dados conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018)." },
 ];
 
 const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito: (v: boolean) => void }) => {
@@ -55,10 +55,11 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
 
   return (
     <>
-      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/30 p-5">
+      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-secondary/10 p-5 shadow-sm shadow-primary/5">
         <div className="flex items-start gap-3">
           <Checkbox
             id="aceito"
+            required
             checked={aceito}
             onCheckedChange={(checked) => setAceito(checked === true)}
             className="mt-1 h-5 w-5 border-primary/40 data-[state=checked]:bg-primary"
@@ -66,7 +67,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
           <div>
             <label htmlFor="aceito" className="text-sm leading-relaxed cursor-pointer text-foreground">
               <Shield className="h-4 w-4 inline text-primary mr-1 -mt-0.5" />
-              Aceito que esta denúncia seja totalmente anônima e declaro estar ciente de que será tratada com{" "}
+              ✅ Aceito que esta denúncia seja totalmente anônima e declaro estar ciente de que será tratada com{" "}
               <strong>confidencialidade total</strong> pela gestão da escola, respeitando a{" "}
               <strong>LGPD</strong>. Entendo que a plataforma não coleta nenhum dado pessoal meu e que denúncias de má-fé podem ter consequências legais.{" "}
               Li e concordo com o{" "}
@@ -461,7 +462,7 @@ const Denunciar = () => {
             {/* Aceite LGPD */}
             <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
-            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading}>
+            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading || !aceito}>
               {loading ? "Enviando..." : (
                 <>
                   <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
