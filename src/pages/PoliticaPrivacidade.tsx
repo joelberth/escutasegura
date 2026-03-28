@@ -56,7 +56,7 @@ const PoliticaPrivacidade = () => (
         <div className="container max-w-4xl px-4 sm:px-6">
           <div className="text-center mb-12 animate-fade-in-up">
             <div className="flex justify-center mb-6">
-              <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-primary/30 via-primary/20 to-blue-500/20 flex items-center justify-center shadow-lg shadow-primary/5 group transition-all duration-300 hover:scale-105">
+              <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-primary/30 via-primary/10 to-accent/30 flex items-center justify-center shadow-lg shadow-primary/5 group transition-all duration-300 hover:scale-105">
                 <Shield className="h-10 w-10 text-primary transition-transform group-hover:rotate-12" />
               </div>
             </div>
