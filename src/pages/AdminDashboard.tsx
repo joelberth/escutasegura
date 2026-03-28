@@ -153,7 +153,66 @@ const AdminDashboard = () => {
     if (data) setAccessRequests(data);
   };
 
+  const fetchSiteSettings = async () => {
+    const { data } = await supabase.from("site_settings").select("*").eq("id", "global").single();
+    if (data) {
+      setSiteLogo(data.logo_url);
+      setSiteName(data.site_name || "Escola Segura Report");
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUpdatingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('site_assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('site_assets')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq('id', 'global');
+
+      if (updateError) throw updateError;
+
+      setSiteLogo(publicUrl);
+      toast({ title: "Logomarca atualizada! ✅" });
+    } catch (error: any) {
+      toast({ title: "Erro ao atualizar logomarca", description: error.message, variant: "destructive" });
+    } finally {
+      setUpdatingLogo(false);
+    }
+  };
+
+  const handleUpdateSiteName = async () => {
+    const { error } = await supabase
+      .from('site_settings')
+      .update({ site_name: siteName, updated_at: new Date().toISOString() })
+      .eq('id', 'global');
+
+    if (error) {
+      toast({ title: "Erro ao atualizar nome do site", variant: "destructive" });
+    } else {
+      toast({ title: "Nome do site atualizado! ✅" });
+    }
+  };
+
   useEffect(() => {
+    fetchSiteSettings();
+
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate("/admin/login"); return; }
       setUserId(user.id);
