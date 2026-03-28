@@ -89,8 +89,8 @@ const Acompanhar = () => {
               <Search className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-3xl font-display font-bold mb-2">Acompanhar Denúncia</h1>
-            <p className="text-muted-foreground">
-              Digite o código de acompanhamento recebido após sua denúncia.
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-md mx-auto">
+              Teste o fluxo de acompanhar denúncia em /acompanhar para verificar que a busca por código ainda funciona corretamente após as mudanças de segurança. Ative a Proteção contra Senhas Vazadas: acesse Lovable Cloud → Users → Auth Settings → Email → ative 'Password HIBP Check'.
             </p>
           </div>
 
