@@ -53,14 +53,20 @@ const PoliticaPrivacidade = () => (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 py-12 md:py-16">
-        <div className="container max-w-3xl">
-          <div className="text-center mb-10 animate-fade-in-up">
-            <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-7 w-7 text-primary" />
+        <div className="container max-w-4xl px-4 sm:px-6">
+          <div className="text-center mb-12 animate-fade-in-up">
+            <div className="flex justify-center mb-6">
+              <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-primary/20 to-accent/30 flex items-center justify-center shadow-lg shadow-primary/5 group transition-all duration-300 hover:scale-105">
+                <Shield className="h-10 w-10 text-primary transition-transform group-hover:rotate-12" />
+              </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">Política de Privacidade</h1>
-            <p className="text-muted-foreground">Escola Segura Report — Plataforma de Denúncias Anônimas</p>
-            <p className="text-xs text-muted-foreground mt-2">Última atualização: 27 de março de 2026</p>
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Política de Privacidade</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Compromisso absoluto com sua segurança e anonimato na plataforma Escola Segura Report.
+            </p>
+            <div className="inline-flex items-center gap-2 mt-6 px-3 py-1.5 rounded-full bg-muted border border-border text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" /> Última atualização: 27 de março de 2026
+            </div>
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8 mb-8 animate-fade-in-up-delay-1">
