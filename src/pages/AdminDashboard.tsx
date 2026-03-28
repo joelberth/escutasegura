@@ -1075,30 +1075,92 @@ const AdminDashboard = () => {
           {activeTab === "config" && isAdmin && (
             <div className="space-y-6 max-w-lg">
               <h2 className="text-2xl font-display font-bold">⚙️ Configurações</h2>
-              <div className="rounded-2xl glass p-6 shadow-card space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Notificações Push</p>
-                    <p className="text-sm text-muted-foreground">Receba alertas no navegador</p>
+              <div className="rounded-2xl glass p-6 shadow-card space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" /> Personalização do Site
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-20 w-20 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
+                        {siteLogo ? (
+                          <img src={siteLogo} alt="Logo" className="h-full w-full object-contain" />
+                        ) : (
+                          <Shield className="h-8 w-8 text-muted-foreground/30" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <p className="text-sm font-medium">Logomarca do Site</p>
+                        <p className="text-xs text-muted-foreground">Formato PNG, JPG ou SVG. Máximo 2MB.</p>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleLogoUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={updatingLogo}
+                          className="rounded-xl h-8 text-xs"
+                        >
+                          {updatingLogo ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
+                          {siteLogo ? "Alterar Logo" : "Fazer Upload"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <label className="text-sm font-medium">Nome do Site</label>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={siteName} 
+                          onChange={(e) => setSiteName(e.target.value)}
+                          placeholder="Ex: Escola Segura Report"
+                          className="rounded-xl h-9"
+                        />
+                        <Button 
+                          size="sm" 
+                          onClick={handleUpdateSiteName}
+                          className="rounded-xl h-9 px-4"
+                        >
+                          Salvar
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    variant={permission === "granted" ? "outline" : "default"}
-                    size="sm"
-                    onClick={async () => {
-                      const granted = await requestPermission();
-                      toast({ title: granted ? "Ativado! 🔔" : "Bloqueado pelo navegador" });
-                    }}
-                    className="rounded-xl"
-                  >
-                    {permission === "granted" ? "Ativo ✅" : "Ativar"}
-                  </Button>
                 </div>
-                <div className="border-t border-border pt-4 space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs">Ctrl+K</kbd> para busca rápida
+
+                <div className="border-t border-border/50 pt-4">
+                  <h3 className="font-semibold mb-4">Preferências</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">Notificações Push</p>
+                      <p className="text-xs text-muted-foreground">Receba alertas no navegador</p>
+                    </div>
+                    <Button
+                      variant={permission === "granted" ? "outline" : "default"}
+                      size="sm"
+                      onClick={async () => {
+                        const granted = await requestPermission();
+                        toast({ title: granted ? "Ativado! 🔔" : "Bloqueado pelo navegador" });
+                      }}
+                      className="rounded-xl h-8 text-xs"
+                    >
+                      {permission === "granted" ? "Ativo ✅" : "Ativar"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 pt-4 space-y-4">
+                  <p className="text-xs text-muted-foreground italic">
+                    Atalhos: <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs not-italic">Ctrl+K</kbd> para busca rápida
                   </p>
                 </div>
               </div>
+
               <div className="rounded-2xl glass p-6 shadow-card">
                 <ActivityFeed />
               </div>
