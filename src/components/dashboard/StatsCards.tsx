@@ -1,5 +1,29 @@
-import { motion } from "framer-motion";
+import { motion, useSpring, useTransform, animate } from "framer-motion";
 import { Shield, TrendingUp, CheckCircle2, Clock, AlertTriangle, Zap } from "lucide-react";
+import { useEffect, useRef } from "react";
+
+interface CountUpProps {
+  value: number;
+}
+
+const CountUp = ({ value }: CountUpProps) => {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 1.5,
+      ease: "easeOut",
+      onUpdate(value) {
+        if (ref.current) {
+          ref.current.textContent = Math.floor(value).toString();
+        }
+      },
+    });
+    return () => controls.stop();
+  }, [value]);
+
+  return <span ref={ref}>0</span>;
+};
 
 interface StatsCardsProps {
   total: number;
@@ -8,9 +32,10 @@ interface StatsCardsProps {
   satisfaction: number;
   pending: number;
   highUrgency: number;
+  onCardClick?: (tab: string) => void;
 }
 
-const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrgency }: StatsCardsProps) => {
+const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrgency, onCardClick }: StatsCardsProps) => {
   const cards = [
     {
       label: "Total de Denúncias",
@@ -20,6 +45,7 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
       iconBg: "bg-primary/15",
       iconColor: "text-primary",
       trend: `+${today} hoje`,
+      targetTab: "denuncias",
     },
     {
       label: "Pendentes",
@@ -29,6 +55,7 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
       iconBg: "bg-urgency-medium/15",
       iconColor: "text-urgency-medium",
       trend: "aguardando ação",
+      targetTab: "denuncias",
     },
     {
       label: "Resolvidas (7d)",
@@ -38,6 +65,7 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
       iconBg: "bg-secondary/15",
       iconColor: "text-secondary",
       trend: `${satisfaction}% resolução`,
+      targetTab: "denuncias",
     },
     {
       label: "Urgência Alta",
@@ -47,6 +75,7 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
       iconBg: "bg-destructive/15",
       iconColor: "text-destructive",
       trend: "requer atenção",
+      targetTab: "denuncias",
     },
   ];
 
@@ -58,7 +87,8 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.08, duration: 0.4 }}
-          className={`relative overflow-hidden rounded-2xl glass bg-gradient-to-br ${card.gradient} p-5 shadow-card hover:shadow-elevated transition-all duration-300 group`}
+          onClick={() => onCardClick?.(card.targetTab)}
+          className={`relative overflow-hidden rounded-2xl glass bg-gradient-to-br ${card.gradient} p-5 shadow-card hover:shadow-elevated transition-all duration-300 group cursor-pointer active:scale-95`}
         >
           <div className="flex items-start justify-between mb-3">
             <div className={`h-10 w-10 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -66,7 +96,9 @@ const StatsCards = ({ total, today, resolvedWeek, satisfaction, pending, highUrg
             </div>
             <Zap className="h-3.5 w-3.5 text-muted-foreground/30" />
           </div>
-          <p className="text-3xl font-display font-extrabold tracking-tight">{card.value}</p>
+          <p className="text-3xl font-display font-extrabold tracking-tight">
+            <CountUp value={card.value} />
+          </p>
           <p className="text-sm text-muted-foreground font-medium mt-0.5">{card.label}</p>
           <div className="flex items-center gap-1 mt-2">
             <TrendingUp className="h-3 w-3 text-primary" />

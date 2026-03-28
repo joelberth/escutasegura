@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import * as XLSX from "xlsx";
 import {
   Pagination,
   PaginationContent,
@@ -80,6 +81,45 @@ const AdminDashboard = () => {
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetTimeout = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      handleLogout();
+      toast({ title: "Sessão expirada", description: "Você foi desconectado por inatividade.", variant: "destructive" });
+    }, 15 * 60 * 1000); // 15 minutes
+  }, []);
+
+  const playAlertSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.2);
+    } catch (e) { console.error("Could not play sound", e); }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resetTimeout);
+    window.addEventListener("keydown", resetTimeout);
+    window.addEventListener("mousedown", resetTimeout);
+    window.addEventListener("touchstart", resetTimeout);
+    resetTimeout();
+    return () => {
+      window.removeEventListener("mousemove", resetTimeout);
+      window.removeEventListener("keydown", resetTimeout);
+      window.removeEventListener("mousedown", resetTimeout);
+      window.removeEventListener("touchstart", resetTimeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [resetTimeout]);
 
   const fetchDenuncias = async (escolaFilter?: string | null) => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
@@ -144,12 +184,14 @@ const AdminDashboard = () => {
     const channel = supabase.channel("denuncias-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
         const nova = payload.new as Denuncia;
-        const title = nova.urgencia === "alta"
-          ? "🚨 DENÚNCIA URGENTE!"
-          : "🔔 Nova denúncia recebida!";
+        const isUrgent = nova.urgencia === "alta";
+        const title = isUrgent ? "🚨 DENÚNCIA URGENTE!" : "🔔 Nova denúncia recebida!";
         const desc = `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`;
-        toast({ title, description: desc });
+        
+        toast({ title, description: desc, variant: isUrgent ? "destructive" : "default" });
+        if (isUrgent) playAlertSound();
         sendNotification(title, { body: desc, tag: nova.id });
+        
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
@@ -278,6 +320,63 @@ const AdminDashboard = () => {
     a.download = `denuncias-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = async () => {
+    toast({ title: "Preparando relatório completo...", description: "Aguarde um momento." });
+    
+    // Fetch additional data for export
+    const { data: feedback } = await supabase.from("denuncia_feedback").select("*, denuncias(codigo_acompanhamento, escola, tipo)");
+    const { data: auditLog } = await supabase.from("denuncia_audit_log").select("*, denuncias(codigo_acompanhamento)");
+    
+    // 1. Denuncias Sheet
+    const denunciasSheet = filtered.map(d => ({
+      "Código": d.codigo_acompanhamento,
+      "Tipo": tipoLabels[d.tipo] || d.tipo,
+      "Escola": d.escola,
+      "Urgência": urgenciaLabels[d.urgencia] || d.urgencia,
+      "Status": statusLabels[d.status] || d.status,
+      "Data": new Date(d.created_at).toLocaleString("pt-BR"),
+      "Descrição": d.descricao,
+      "Resposta": d.response_text || "",
+      "Data Resolução": d.resolved_at ? new Date(d.resolved_at).toLocaleString("pt-BR") : ""
+    }));
+
+    // 2. Stats by School Sheet
+    const counts: Record<string, any> = {};
+    denuncias.forEach(d => {
+      if (!counts[d.escola]) counts[d.escola] = { "Escola": d.escola, "Total": 0, "Pendentes": 0, "Resolvidas": 0 };
+      counts[d.escola]["Total"]++;
+      if (d.status === "pendente") counts[d.escola]["Pendentes"]++;
+      if (d.status === "resolvida") counts[d.escola]["Resolvidas"]++;
+    });
+    const schoolsSheet = Object.values(counts);
+
+    // 3. Satisfaction Sheet
+    const satisfactionSheet = (feedback || []).map(f => ({
+      "Código Denúncia": (f.denuncias as any)?.codigo_acompanhamento,
+      "Escola": (f.denuncias as any)?.escola,
+      "Nota": f.rating,
+      "Comentário": f.comment || "",
+      "Data": new Date(f.created_at).toLocaleString("pt-BR")
+    }));
+
+    // 4. Audit Log Sheet
+    const auditSheet = (auditLog || []).map(l => ({
+      "Código Denúncia": (l.denuncias as any)?.codigo_acompanhamento,
+      "Ação": l.action,
+      "Detalhes": l.details || "",
+      "Data": new Date(l.created_at).toLocaleString("pt-BR")
+    }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(denunciasSheet), "Denúncias");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(schoolsSheet), "Estatísticas por Escola");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(satisfactionSheet), "Satisfação");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(auditSheet), "Log de Auditoria");
+    
+    XLSX.writeFile(wb, `relatorio-completo-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast({ title: "Relatório gerado! 📊" });
   };
 
   const exportDashboardPDF = () => {
@@ -543,6 +642,7 @@ const AdminDashboard = () => {
                 satisfaction={satisfaction}
                 pending={totalPending}
                 highUrgency={totalHighUrgency}
+                onCardClick={(tab) => setActiveTab(tab as TabKey)}
               />
 
               {/* Performance rings */}
@@ -952,15 +1052,21 @@ const AdminDashboard = () => {
                 satisfaction={satisfaction}
                 pending={totalPending}
                 highUrgency={totalHighUrgency}
+                onCardClick={(tab) => setActiveTab(tab as TabKey)}
               />
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-display font-bold">
                   📋 Denúncias {gestorEscola && <span className="text-base font-normal text-muted-foreground">— {gestorEscola}</span>}
                 </h2>
-                <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 rounded-xl">
-                  <Download className="h-4 w-4" /> Exportar CSV
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2 rounded-xl border-primary/30 text-primary hover:bg-primary/5">
+                    <FileSpreadsheet className="h-4 w-4" /> Relatório Completo (Excel)
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 rounded-xl">
+                    <Download className="h-4 w-4" /> CSV
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
