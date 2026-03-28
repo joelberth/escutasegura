@@ -651,8 +651,13 @@ const AdminDashboard = () => {
       {/* Main */}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="md:hidden flex items-center justify-between p-3 border-b border-border gap-2">
-          <div className="flex items-center gap-2 font-display font-bold text-sm flex-shrink-0">
-            <Shield className="h-5 w-5 text-primary" /> Painel
+          <div className="flex items-center gap-2 font-display font-bold text-sm flex-shrink-0 truncate">
+            {settings.logo_url ? (
+              <img src={settings.logo_url} alt={settings.site_name} className="h-5 w-auto" />
+            ) : (
+              <Shield className="h-5 w-5 text-primary" />
+            )}
+            <span className="truncate">{settings.site_name}</span>
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => {
