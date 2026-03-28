@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database } from "lucide-react";
+import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,13 +136,17 @@ const Denunciar = () => {
   const [escolaSearch, setEscolaSearch] = useState("");
   const [escolas, setEscolas] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [descricao, setDescricao] = useState("");
+  const [descricao, setDescricao] = useState(() => localStorage.getItem("denuncia_draft_descricao") || "");
   const [urgencia, setUrgencia] = useState<"baixa" | "media" | "alta">("media");
   const [aceito, setAceito] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [codigo, setCodigo] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("denuncia_draft_descricao", descricao);
+  }, [descricao]);
 
   useEffect(() => {
     supabase.from("escolas").select("nome").then(({ data }) => {
@@ -251,6 +255,7 @@ const Denunciar = () => {
 
       if (error) throw error;
 
+      localStorage.removeItem("denuncia_draft_descricao");
       setCodigo(codigoAcompanhamento);
       setSuccess(true);
       toast({ title: "Denúncia enviada com sucesso! ✅" });
@@ -284,13 +289,16 @@ const Denunciar = () => {
             <div className="rounded-xl border border-border bg-muted p-4 mb-6">
               <p className="text-xs text-muted-foreground mb-1">Código de Acompanhamento</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-display font-bold tracking-wider">{codigo}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(codigo); toast({ title: "Código copiado!" }); }}
-                  className="p-1.5 rounded-md hover:bg-accent transition-colors"
-                >
-                  <Copy className="h-4 w-4 text-muted-foreground" />
-                </button>
+                <span className="text-3xl font-mono font-bold tracking-[0.2em] text-primary">{codigo}</span>
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(codigo); toast({ title: "Código copiado!" }); }}
+                    className="p-2 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                    title="Copiar código"
+                  >
+                    <Copy className="h-4 w-4 text-primary" />
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex flex-col gap-3">
@@ -382,6 +390,9 @@ const Denunciar = () => {
                     placeholder="Ex: Centro Educa Mais Paulo Freire"
                   />
                 </div>
+                <div className="flex justify-between items-center px-1">
+                  <p className="text-[10px] text-muted-foreground">Não encontrou sua escola? Digite o nome completo acima.</p>
+                </div>
                 {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
                   <div className="absolute z-10 top-full mt-1 w-full rounded-xl border border-border bg-popover shadow-elevated max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2">
                     {filteredEscolas.map((e) => (
@@ -401,16 +412,25 @@ const Denunciar = () => {
 
             {/* Descrição */}
             <div className="space-y-2.5">
-              <label className="text-sm font-bold flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">3</span>
-                Descrição Detalhada *
-              </label>
+              <div className="flex justify-between items-end">
+                <label className="text-sm font-bold flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">3</span>
+                  Descrição Detalhada *
+                </label>
+                <span className={`text-[10px] font-mono ${descricao.length > 4500 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {descricao.length}/5000
+                </span>
+              </div>
               <Textarea
                 className="rounded-xl border-border/50 focus:ring-primary/20 min-h-[160px] resize-none"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Descreva o que aconteceu com o máximo de detalhes possível. Sua identidade será mantida em total sigilo."
+                maxLength={5000}
               />
+              <p className="text-[10px] text-muted-foreground px-1 italic">
+                💡 Dica: Tente responder QUEM, ONDE e QUANDO o fato ocorreu.
+              </p>
             </div>
 
             {/* Urgência */}
@@ -469,13 +489,18 @@ const Denunciar = () => {
             {/* Aceite LGPD */}
             <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
-            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading || !aceito}>
-              {loading ? "Enviando..." : (
-                <>
-                  <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
-                </>
-              )}
-            </Button>
+            <div className="space-y-3">
+              <Button type="submit" size="lg" className="w-full text-base gap-2 shadow-lg shadow-primary/20" disabled={loading || !aceito}>
+                {loading ? "Enviando..." : (
+                  <>
+                    <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
+                  </>
+                )}
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                <Clock className="h-3 w-3" /> Prazo estimado de resposta: 24h a 48h úteis
+              </div>
+            </div>
           </form>
         </div>
       </main>
