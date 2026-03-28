@@ -43,11 +43,11 @@ function generateCode() {
 }
 
 const termoSections = [
-  { icon: Shield, title: "Anonimato Total", text: "Nenhum dado pessoal é coletado. A plataforma foi projetada para tornar impossível a identificação do denunciante." },
+  { icon: Shield, title: "Anonimato total", text: "Nenhum dado pessoal é coletado. A plataforma foi projetada para tornar impossível a identificação do denunciante." },
   { icon: Lock, title: "Confidencialidade", text: "Acesso restrito apenas à gestão autorizada. Nenhum dado é compartilhado com terceiros." },
-  { icon: FileText, title: "Finalidade", text: "Os dados são utilizados apenas para investigação interna e melhoria contínua do ambiente escolar." },
-  { icon: Scale, title: "Responsabilidade", text: "Declaro que as informações são verdadeiras. Denúncias de má-fé podem ter consequências legais." },
-  { icon: Database, title: "LGPD", text: "Tratamento conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018)." },
+  { icon: FileText, title: "Finalidade", text: "Apenas investigação interna e melhoria contínua do ambiente escolar." },
+  { icon: Scale, title: "Responsabilidade", text: "Declaro que as informações fornecidas são verdadeiras e baseadas em fatos reais." },
+  { icon: Database, title: "LGPD", text: "Tratamento de dados conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018)." },
 ];
 
 const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito: (v: boolean) => void }) => {
