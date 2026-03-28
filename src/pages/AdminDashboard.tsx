@@ -83,6 +83,10 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [siteLogo, setSiteLogo] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState("");
+  const [updatingLogo, setUpdatingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetTimeout = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
