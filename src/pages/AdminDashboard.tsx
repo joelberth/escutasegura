@@ -1029,7 +1029,7 @@ const AdminDashboard = () => {
                       className="h-4 w-4 rounded border-border accent-primary cursor-pointer" />
                     <span className="text-xs text-muted-foreground">Selecionar todos ({filtered.length})</span>
                   </div>
-                  {filtered.map((d, i) => (
+                  {paginated.map((d, i) => (
                     <motion.div
                       key={d.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -1087,6 +1087,38 @@ const AdminDashboard = () => {
                       </div>
                     </motion.div>
                   ))}
+                  
+                  {totalPages > 1 && (
+                    <div className="pt-2">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          {[...Array(totalPages)].map((_, idx) => (
+                            <PaginationItem key={idx} className="hidden lg:inline-block">
+                              <PaginationLink
+                                onClick={() => setCurrentPage(idx + 1)}
+                                isActive={currentPage === idx + 1}
+                                className="cursor-pointer"
+                              >
+                                {idx + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
