@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import ProfileButton from "@/components/ProfileButton";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
