@@ -20,7 +20,7 @@ const Footer = () => (
             <Link to="/denunciar" className="hover:text-foreground transition-colors">Fazer Denúncia</Link>
             <Link to="/acompanhar" className="hover:text-foreground transition-colors">Acompanhar</Link>
             <Link to="/sobre" className="hover:text-foreground transition-colors">Sobre o Projeto</Link>
-            <Link to="/politica-de-privacidade" className="hover:text-foreground transition-colors">Política de Privacidade</Link>
+            <Link to="/politica-de-privacidade#politica-privacidade" className="hover:text-foreground transition-colors">Política de Privacidade</Link>
           </div>
         </div>
         <div>

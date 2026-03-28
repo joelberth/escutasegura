@@ -79,7 +79,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
               <button type="button" onClick={() => setShowTermo(true)} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 <Eye className="h-3 w-3" /> Ver Termo Completo
               </button>
-              <Link to="/politica-de-privacidade" className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors">
+              <Link to="/politica-de-privacidade#politica-privacidade" className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors">
                 <Lock className="h-3 w-3" /> Política de Privacidade
               </Link>
             </div>
