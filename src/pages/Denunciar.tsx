@@ -289,13 +289,16 @@ const Denunciar = () => {
             <div className="rounded-xl border border-border bg-muted p-4 mb-6">
               <p className="text-xs text-muted-foreground mb-1">Código de Acompanhamento</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-display font-bold tracking-wider">{codigo}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(codigo); toast({ title: "Código copiado!" }); }}
-                  className="p-1.5 rounded-md hover:bg-accent transition-colors"
-                >
-                  <Copy className="h-4 w-4 text-muted-foreground" />
-                </button>
+                <span className="text-3xl font-mono font-bold tracking-[0.2em] text-primary">{codigo}</span>
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(codigo); toast({ title: "Código copiado!" }); }}
+                    className="p-2 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                    title="Copiar código"
+                  >
+                    <Copy className="h-4 w-4 text-primary" />
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex flex-col gap-3">
