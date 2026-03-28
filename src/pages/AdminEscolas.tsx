@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Building2, Plus, Trash2, Edit, Users, ArrowLeft, Save, X
+  Building2, Plus, Trash2, Edit, Users, ArrowLeft, Save, X, Phone, Mail, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 type Escola = {
   id: string;
@@ -46,6 +54,8 @@ const AdminEscolas = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // School form state
   const [nome, setNome] = useState("");
@@ -281,44 +291,118 @@ const AdminEscolas = () => {
           <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
           <p>Nenhuma escola cadastrada.</p>
         </div>
-      ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">Escola</th>
-                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Cidade/UF</th>
-                  <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Tipo</th>
-                  <th className="text-right px-4 py-3 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {escolas.map((e) => (
-                  <tr key={e.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium">{e.nome}</td>
-                    <td className="px-4 py-3 hidden md:table-cell">{e.cidade}/{e.estado}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell capitalize">{e.tipo_instituicao}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openGestores(e)} title="Gestores">
-                          <Users className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(e)} title="Editar">
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteEscola(e.id)} title="Excluir">
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </Button>
-                      </div>
-                    </td>
+      ) : (() => {
+        const totalPages = Math.ceil(escolas.length / itemsPerPage);
+        const paginatedEscolas = escolas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        
+        return (
+          <div className="space-y-4">
+            {/* Desktop Table */}
+            <div className="hidden md:block rounded-xl border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium">Escola</th>
+                    <th className="text-left px-4 py-3 font-medium">Cidade/UF</th>
+                    <th className="text-left px-4 py-3 font-medium">Tipo</th>
+                    <th className="text-right px-4 py-3 font-medium">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paginatedEscolas.map((e) => (
+                    <tr key={e.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3 font-medium">{e.nome}</td>
+                      <td className="px-4 py-3">{e.cidade}/{e.estado}</td>
+                      <td className="px-4 py-3 capitalize">{e.tipo_instituicao}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openGestores(e)} title="Gestores">
+                            <Users className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(e)} title="Editar">
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteEscola(e.id)} title="Excluir">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {paginatedEscolas.map((e) => (
+                <div key={e.id} className="p-4 rounded-xl border border-border bg-card shadow-sm space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-foreground leading-tight">{e.nome}</h3>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(e)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleDeleteEscola(e.id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" /> {e.cidade}/{e.estado}
+                    </div>
+                    <div className="flex items-center gap-1 capitalize">
+                      <Building2 className="h-3 w-3" /> {e.tipo_instituicao}
+                    </div>
+                    {e.telefone && (
+                      <div className="flex items-center gap-1 col-span-2">
+                        <Phone className="h-3 w-3" /> {e.telefone}
+                      </div>
+                    )}
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full gap-2 text-xs" onClick={() => openGestores(e)}>
+                    <Users className="h-3.5 w-3.5" /> Gerenciar Gestores
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pt-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <PaginationItem key={i} className="hidden sm:inline-block">
+                        <PaginationLink
+                          onClick={() => setCurrentPage(i + 1)}
+                          isActive={currentPage === i + 1}
+                          className="cursor-pointer"
+                        >
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

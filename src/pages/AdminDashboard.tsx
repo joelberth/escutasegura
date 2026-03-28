@@ -18,6 +18,14 @@ import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { motion } from "framer-motion";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import type { Tables } from "@/integrations/supabase/types";
 import AdminEscolas from "@/pages/AdminEscolas";
 import AdminLogs from "@/pages/AdminLogs";
@@ -70,6 +78,8 @@ const AdminDashboard = () => {
   const [responding, setResponding] = useState(false);
   const [pendingGestores, setPendingGestores] = useState<any[]>([]);
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchDenuncias = async (escolaFilter?: string | null) => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
@@ -202,6 +212,14 @@ const AdminDashboard = () => {
     if (searchText && !d.escola.toLowerCase().includes(searchText.toLowerCase()) && !d.codigo_acompanhamento.toLowerCase().includes(searchText.toLowerCase())) return false;
     return true;
   });
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTipo, filterStatus, filterEscola, searchText]);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleRespond = async () => {
     if (!selectedDenuncia || !responseText.trim()) return;
@@ -1011,7 +1029,7 @@ const AdminDashboard = () => {
                       className="h-4 w-4 rounded border-border accent-primary cursor-pointer" />
                     <span className="text-xs text-muted-foreground">Selecionar todos ({filtered.length})</span>
                   </div>
-                  {filtered.map((d, i) => (
+                  {paginated.map((d, i) => (
                     <motion.div
                       key={d.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -1069,6 +1087,38 @@ const AdminDashboard = () => {
                       </div>
                     </motion.div>
                   ))}
+                  
+                  {totalPages > 1 && (
+                    <div className="pt-2">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          {[...Array(totalPages)].map((_, idx) => (
+                            <PaginationItem key={idx} className="hidden lg:inline-block">
+                              <PaginationLink
+                                onClick={() => setCurrentPage(idx + 1)}
+                                isActive={currentPage === idx + 1}
+                                className="cursor-pointer"
+                              >
+                                {idx + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
