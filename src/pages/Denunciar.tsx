@@ -486,13 +486,18 @@ const Denunciar = () => {
             {/* Aceite LGPD */}
             <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
-            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading || !aceito}>
-              {loading ? "Enviando..." : (
-                <>
-                  <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
-                </>
-              )}
-            </Button>
+            <div className="space-y-3">
+              <Button type="submit" size="lg" className="w-full text-base gap-2 shadow-lg shadow-primary/20" disabled={loading || !aceito}>
+                {loading ? "Enviando..." : (
+                  <>
+                    <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
+                  </>
+                )}
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                <Clock className="h-3 w-3" /> Prazo estimado de resposta: 24h a 48h úteis
+              </div>
+            </div>
           </form>
         </div>
       </main>
