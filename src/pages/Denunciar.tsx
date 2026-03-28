@@ -255,6 +255,7 @@ const Denunciar = () => {
 
       if (error) throw error;
 
+      localStorage.removeItem("denuncia_draft_descricao");
       setCodigo(codigoAcompanhamento);
       setSuccess(true);
       toast({ title: "Denúncia enviada com sucesso! ✅" });
