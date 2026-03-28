@@ -225,41 +225,13 @@ const Denunciar = () => {
 
       const codigoAcompanhamento = generateCode();
 
-      // Capture device info
+      // To ensure 100% anonymity as promised, we do not store IP, specific location, or detailed device info.
       const deviceInfo = (() => {
         const ua = navigator.userAgent;
         if (/Mobi|Android/i.test(ua)) return "Mobile";
         if (/Tablet|iPad/i.test(ua)) return "Tablet";
         return "Desktop";
-      })() + ` — ${navigator.userAgent.slice(0, 80)}`;
-
-      // Try to get IP and location
-      let ipAddress = "Não disponível";
-      let locationInfo = "Não disponível";
-      let latitude: number | null = null;
-      let longitude: number | null = null;
-
-      // Try browser geolocation first
-      try {
-        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: false });
-        });
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-      } catch { /* silently fail */ }
-
-      try {
-        const ipRes = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
-        if (ipRes.ok) {
-          const ipData = await ipRes.json();
-          ipAddress = ipData.ip || "Não disponível";
-          locationInfo = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(", ") || "Não disponível";
-          if (!latitude && ipData.latitude) {
-            latitude = ipData.latitude;
-            longitude = ipData.longitude;
-          }
-        }
-      } catch { /* silently fail */ }
+      })();
 
       const { error } = await supabase.from("denuncias").insert({
         tipo: tipo as "bullying" | "estrutural" | "comunicacao" | "outro",
@@ -268,11 +240,11 @@ const Denunciar = () => {
         urgencia,
         codigo_acompanhamento: codigoAcompanhamento,
         arquivo_urls: arquivoUrls,
-        ip_address: ipAddress,
+        ip_address: "Anônimo",
         device_info: deviceInfo,
-        location_info: locationInfo,
-        latitude: latitude as any,
-        longitude: longitude as any,
+        location_info: "Anônimo",
+        latitude: null,
+        longitude: null,
         termo_aceito: true,
       } as any);
 
