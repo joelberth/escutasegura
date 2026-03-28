@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import PageTransition from "@/components/PageTransition";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const benefits = [
   { icon: Shield, title: "100% Anônimo", desc: "Sua identidade nunca será revelada. Garantimos total confidencialidade por design." },
