@@ -64,6 +64,7 @@ const AdminDashboard = () => {
   const { permission, supported, requestPermission, sendNotification } = usePushNotifications();
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSiteSettings();
   const [userId, setUserId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const [activeTab, setActiveTab] = useState<TabKey>("denuncias");
