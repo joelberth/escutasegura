@@ -462,7 +462,7 @@ const Denunciar = () => {
             {/* Aceite LGPD */}
             <TermoAceiteSection aceito={aceito} setAceito={setAceito} />
 
-            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading}>
+            <Button type="submit" size="lg" className="w-full text-base gap-2" disabled={loading || !aceito}>
               {loading ? "Enviando..." : (
                 <>
                   <Shield className="h-4 w-4" /> Enviar Denúncia com Segurança
