@@ -133,58 +133,101 @@ const AdminUsuarios = () => {
           <p>Nenhum usuário encontrado.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((g, i) => {
-            const isAdminUser = adminUserIds.includes(g.user_id);
-            return (
-              <motion.div key={g.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                className="rounded-2xl glass p-5 shadow-card hover:shadow-elevated transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold">{g.nome}</p>
-                      {isAdminUser && (
-                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">👑 Admin</span>
-                      )}
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        g.approved ? "bg-primary/10 text-primary" : "bg-urgency-medium/10 text-urgency-medium"
-                      }`}>
-                        {g.approved ? "✅ Aprovado" : "⏳ Pendente"}
-                      </span>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {(() => {
+              const totalPages = Math.ceil(filtered.length / itemsPerPage);
+              const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+              
+              return (
+                <>
+                  {paginated.map((g, i) => {
+                    const isAdminUser = adminUserIds.includes(g.user_id);
+                    return (
+                      <motion.div key={g.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                        className="rounded-2xl glass p-5 shadow-card hover:shadow-elevated transition-all">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold">{g.nome}</p>
+                              {isAdminUser && (
+                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">👑 Admin</span>
+                              )}
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                g.approved ? "bg-primary/10 text-primary" : "bg-urgency-medium/10 text-urgency-medium"
+                              }`}>
+                                {g.approved ? "✅ Aprovado" : "⏳ Pendente"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{g.email}</p>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <UserCog className="h-3 w-3" /> {tipoGestorLabels[g.tipo] || g.tipo}
+                              </span>
+                              {g.escolas && (
+                                <span className="flex items-center gap-1">
+                                  <Building2 className="h-3 w-3" /> {(g.escolas as any).nome}
+                                </span>
+                              )}
+                              <span>{new Date(g.created_at).toLocaleDateString("pt-BR")}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {!g.approved ? (
+                              <Button size="sm" onClick={() => handleApprove(g)} className="gap-1 rounded-xl text-xs">
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="outline" onClick={() => handleRevoke(g)} className="gap-1 rounded-xl text-xs">
+                                <XCircle className="h-3.5 w-3.5" /> Revogar
+                              </Button>
+                            )}
+                            {!isAdminUser && (
+                              <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(g)} className="rounded-xl text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+
+                  {totalPages > 1 && (
+                    <div className="pt-2">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          {[...Array(totalPages)].map((_, idx) => (
+                            <PaginationItem key={idx} className="hidden sm:inline-block">
+                              <PaginationLink
+                                onClick={() => setCurrentPage(idx + 1)}
+                                isActive={currentPage === idx + 1}
+                                className="cursor-pointer"
+                              >
+                                {idx + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
-                    <p className="text-sm text-muted-foreground">{g.email}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <UserCog className="h-3 w-3" /> {tipoGestorLabels[g.tipo] || g.tipo}
-                      </span>
-                      {g.escolas && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3 w-3" /> {(g.escolas as any).nome}
-                        </span>
-                      )}
-                      <span>{new Date(g.created_at).toLocaleDateString("pt-BR")}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {!g.approved ? (
-                      <Button size="sm" onClick={() => handleApprove(g)} className="gap-1 rounded-xl text-xs">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
-                      </Button>
-                    ) : (
-                      <Button size="sm" variant="outline" onClick={() => handleRevoke(g)} className="gap-1 rounded-xl text-xs">
-                        <XCircle className="h-3.5 w-3.5" /> Revogar
-                      </Button>
-                    )}
-                    {!isAdminUser && (
-                      <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(g)} className="rounded-xl text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                  )}
+                </>
+              );
+            })()}
+          </div>
         </div>
       )}
 
