@@ -54,6 +54,8 @@ const AdminEscolas = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // School form state
   const [nome, setNome] = useState("");
