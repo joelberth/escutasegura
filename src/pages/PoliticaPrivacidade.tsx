@@ -60,7 +60,7 @@ const PoliticaPrivacidade = () => (
                 <Shield className="h-10 w-10 text-primary transition-transform group-hover:rotate-12" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Política de Privacidade</h1>
+            <h1 id="politica-privacidade" className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Política de Privacidade</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Compromisso absoluto com sua segurança e anonimato na plataforma Escola Segura Report.
             </p>
