@@ -48,6 +48,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AnimatedRoutes />
+        <ScrollToTop />
         <AccessibilityToolbar />
       </BrowserRouter>
     </TooltipProvider>
