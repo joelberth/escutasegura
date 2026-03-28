@@ -578,10 +578,14 @@ const AdminDashboard = () => {
         onNavigate={(tab) => setActiveTab(tab as TabKey)}
       />
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground">
-        <div className="flex items-center gap-2 p-5 border-b border-sidebar-border">
-          <Shield className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display font-bold text-sm">Escola Segura Report</span>
+      <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border glass-sidebar text-sidebar-foreground h-screen sticky top-0">
+        <div className="flex items-center gap-2 p-5 border-b border-sidebar-border truncate">
+          {settings.logo_url ? (
+            <img src={settings.logo_url} alt={settings.site_name} className="h-6 w-auto" />
+          ) : (
+            <Shield className="h-6 w-6 text-sidebar-primary" />
+          )}
+          <span className="font-display font-bold text-sm truncate">{settings.site_name}</span>
         </div>
         <button
           onClick={() => { const e = new KeyboardEvent("keydown", { key: "k", ctrlKey: true }); document.dispatchEvent(e); }}
