@@ -100,7 +100,7 @@ const AdminLogin = () => {
           <form onSubmit={handleLogin} className="space-y-4 animate-fade-in-up-delay-1">
             <div className="space-y-2">
               <label className="text-sm font-medium">E-mail</label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="gestor@escola.com" />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="joelberthsen@gmail.com" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
