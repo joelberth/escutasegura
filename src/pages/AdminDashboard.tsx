@@ -307,19 +307,61 @@ const AdminDashboard = () => {
     else setSelectedIds(new Set(filtered.map(d => d.id)));
   };
 
-  const exportCSV = () => {
-    const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
-    const rows = filtered.map((d) =>
-      `${d.codigo_acompanhamento},${d.tipo},"${d.escola.replace(/"/g, '""')}",${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
-    );
-    const csv = [...headers, ...rows].join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `denuncias-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportToExcel = async () => {
+    toast({ title: "Preparando relatório completo...", description: "Aguarde um momento." });
+    
+    // Fetch additional data for export
+    const { data: feedback } = await supabase.from("denuncia_feedback").select("*, denuncias(codigo_acompanhamento, escola, tipo)");
+    const { data: auditLog } = await supabase.from("denuncia_audit_log").select("*, denuncias(codigo_acompanhamento)");
+    
+    // 1. Denuncias Sheet
+    const denunciasSheet = filtered.map(d => ({
+      "Código": d.codigo_acompanhamento,
+      "Tipo": tipoLabels[d.tipo] || d.tipo,
+      "Escola": d.escola,
+      "Urgência": urgenciaLabels[d.urgencia] || d.urgencia,
+      "Status": statusLabels[d.status] || d.status,
+      "Data": new Date(d.created_at).toLocaleString("pt-BR"),
+      "Descrição": d.descricao,
+      "Resposta": d.response_text || "",
+      "Data Resolução": d.resolved_at ? new Date(d.resolved_at).toLocaleString("pt-BR") : ""
+    }));
+
+    // 2. Stats by School Sheet
+    const counts: Record<string, any> = {};
+    denuncias.forEach(d => {
+      if (!counts[d.escola]) counts[d.escola] = { "Escola": d.escola, "Total": 0, "Pendentes": 0, "Resolvidas": 0 };
+      counts[d.escola]["Total"]++;
+      if (d.status === "pendente") counts[d.escola]["Pendentes"]++;
+      if (d.status === "resolvida") counts[d.escola]["Resolvidas"]++;
+    });
+    const schoolsSheet = Object.values(counts);
+
+    // 3. Satisfaction Sheet
+    const satisfactionSheet = (feedback || []).map(f => ({
+      "Código Denúncia": (f.denuncias as any)?.codigo_acompanhamento,
+      "Escola": (f.denuncias as any)?.escola,
+      "Nota": f.rating,
+      "Comentário": f.comment || "",
+      "Data": new Date(f.created_at).toLocaleString("pt-BR")
+    }));
+
+    // 4. Audit Log Sheet
+    const auditSheet = (auditLog || []).map(l => ({
+      "Código Denúncia": (l.denuncias as any)?.codigo_acompanhamento,
+      "Ação": l.action,
+      "Detalhes": l.details || "",
+      "Data": new Date(l.created_at).toLocaleString("pt-BR")
+    }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(denunciasSheet), "Denúncias");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(schoolsSheet), "Estatísticas por Escola");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(satisfactionSheet), "Satisfação");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(auditSheet), "Log de Auditoria");
+    
+    XLSX.writeFile(wb, `relatorio-completo-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast({ title: "Relatório gerado! 📊" });
   };
 
   const exportDashboardPDF = () => {
