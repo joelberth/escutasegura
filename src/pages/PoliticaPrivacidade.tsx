@@ -1,4 +1,4 @@
-import { Shield, Lock, ArrowLeft, FileText, Eye, Scale, Database, Mail } from "lucide-react";
+import { Shield, Lock, ArrowLeft, FileText, Eye, Scale, Database, Mail, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
