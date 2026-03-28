@@ -1058,9 +1058,14 @@ const AdminDashboard = () => {
                 <h2 className="text-2xl font-display font-bold">
                   📋 Denúncias {gestorEscola && <span className="text-base font-normal text-muted-foreground">— {gestorEscola}</span>}
                 </h2>
-                <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 rounded-xl">
-                  <Download className="h-4 w-4" /> Exportar CSV
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2 rounded-xl border-primary/30 text-primary hover:bg-primary/5">
+                    <FileSpreadsheet className="h-4 w-4" /> Relatório Completo (Excel)
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 rounded-xl">
+                    <Download className="h-4 w-4" /> CSV
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
