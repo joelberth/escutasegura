@@ -85,24 +85,27 @@ const Acompanhar = () => {
       <main className="flex-1 py-12 md:py-16">
         <div className="container max-w-lg">
           <div className="text-center mb-10 animate-fade-in-up">
-            <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Search className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-3xl font-display font-bold mb-2">Acompanhar Denúncia</h1>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-md mx-auto">
-              Corrija todos os erros e bugs de segurança. Deixe todo o sistema totalmente seguro.
+              Insira o código de acompanhamento recebido no momento da denúncia para verificar o status atual e possíveis respostas da gestão.
             </p>
           </div>
 
-          <form onSubmit={handleSearch} className="flex gap-3 mb-8 animate-fade-in-up-delay-1">
-            <Input
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              placeholder="Ex: DEN-2026-7842"
-              className="text-center font-mono text-lg tracking-wider"
-            />
-            <Button type="submit" disabled={loading}>
-              {loading ? "..." : <Search className="h-4 w-4" />}
+          <form onSubmit={handleSearch} className="flex gap-2 mb-12 animate-fade-in-up-delay-1 p-2 rounded-2xl border border-border bg-card shadow-soft items-center">
+            <div className="flex-1 relative group">
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                placeholder="Ex: DEN-2026-7842"
+                className="pl-10 h-12 border-none focus-visible:ring-0 text-center font-mono text-lg tracking-wider"
+              />
+            </div>
+            <Button type="submit" disabled={loading} size="lg" className="rounded-xl h-12 px-6 gap-2">
+              {loading ? "..." : <><Search className="h-4 w-4" /> Buscar</>}
             </Button>
           </form>
 

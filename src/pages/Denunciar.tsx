@@ -325,79 +325,113 @@ const Denunciar = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in-up-delay-1" aria-label="Formulário de denúncia anônima">
+          <div className="mb-8 grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map((s) => (
+              <div
+                key={s}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  (s === 1 && tipo) || (s === 2 && escola) || (s === 3 && descricao) || (s === 4 && aceito)
+                    ? "bg-primary w-full"
+                    : "bg-muted w-full opacity-50"
+                }`}
+              />
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up-delay-1 p-6 md:p-8 rounded-3xl border border-border bg-card/50 backdrop-blur-sm shadow-soft" aria-label="Formulário de denúncia anônima">
             {/* Demo button */}
-            <div className="flex justify-end">
-              <Button type="button" variant="ghost" size="sm" onClick={fillExample} className="text-xs text-muted-foreground">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                <Lock className="h-3 w-3" /> Conexão Criptografada
+              </span>
+              <Button type="button" variant="ghost" size="sm" onClick={fillExample} className="text-xs text-muted-foreground hover:text-primary transition-colors">
                 Preencher com exemplo
               </Button>
             </div>
 
-            {/* Tipo */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium" id="tipo-label">Tipo de Denúncia *</label>
-              <Select value={tipo} onValueChange={setTipo}>
-                <SelectTrigger><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(tipoLabels).map(([val, label]) => (
-                    <SelectItem key={val} value={val}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tipo */}
+              <div className="space-y-2.5">
+                <label className="text-sm font-bold flex items-center gap-2" id="tipo-label">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">1</span>
+                  Tipo de Denúncia *
+                </label>
+                <Select value={tipo} onValueChange={setTipo}>
+                  <SelectTrigger className="h-12 rounded-xl border-border/50 focus:ring-primary/20"><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(tipoLabels).map(([val, label]) => (
+                      <SelectItem key={val} value={val}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Escola */}
-            <div className="space-y-2 relative">
-              <label className="text-sm font-medium">Nome da Escola *</label>
-              <Input
-                value={escolaSearch}
-                onChange={(e) => { setEscolaSearch(e.target.value); setEscola(e.target.value); setShowSuggestions(true); }}
-                onFocus={() => setShowSuggestions(true)}
-                placeholder="Ex: Centro Educa Mais Paulo Freire"
-              />
-              {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
-                <div className="absolute z-10 top-full mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">
-                  {filteredEscolas.map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
-                      onClick={() => { setEscola(e); setEscolaSearch(e); setShowSuggestions(false); }}
-                    >
-                      {e}
-                    </button>
-                  ))}
+              {/* Escola */}
+              <div className="space-y-2.5 relative">
+                <label className="text-sm font-bold flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">2</span>
+                  Nome da Escola *
+                </label>
+                <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input
+                    className="h-12 pl-10 rounded-xl border-border/50 focus:ring-primary/20"
+                    value={escolaSearch}
+                    onChange={(e) => { setEscolaSearch(e.target.value); setEscola(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Ex: Centro Educa Mais Paulo Freire"
+                  />
                 </div>
-              )}
+                {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
+                  <div className="absolute z-10 top-full mt-1 w-full rounded-xl border border-border bg-popover shadow-elevated max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                    {filteredEscolas.map((e) => (
+                      <button
+                        key={e}
+                        type="button"
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-accent transition-colors font-medium"
+                        onClick={() => { setEscola(e); setEscolaSearch(e); setShowSuggestions(false); }}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Descrição */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Descrição Detalhada *</label>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">3</span>
+                Descrição Detalhada *
+              </label>
               <Textarea
+                className="rounded-xl border-border/50 focus:ring-primary/20 min-h-[160px] resize-none"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
-                placeholder="Descreva o que aconteceu com o máximo de detalhes possível..."
-                rows={5}
+                placeholder="Descreva o que aconteceu com o máximo de detalhes possível. Sua identidade será mantida em total sigilo."
               />
             </div>
 
             {/* Urgência */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nível de Urgência</label>
-              <div className="flex gap-3">
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">4</span>
+                Nível de Urgência
+              </label>
+              <div className="flex gap-4">
                 {urgenciaOptions.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
                     onClick={() => setUrgencia(opt.value)}
-                    className={`flex-1 rounded-lg border-2 py-2.5 text-sm font-medium transition-all ${
+                    className={`flex-1 rounded-xl border-2 py-3.5 text-sm font-bold transition-all shadow-sm ${
                       urgencia === opt.value
-                        ? "border-primary bg-accent text-foreground"
-                        : "border-border text-muted-foreground hover:border-primary/40"
+                        ? "border-primary bg-primary/5 text-primary scale-[1.02]"
+                        : "border-border/50 text-muted-foreground hover:border-primary/30"
                     }`}
                   >
-                    <span className={`inline-block h-2 w-2 rounded-full ${opt.color} mr-2`} />
+                    <span className={`inline-block h-2.5 w-2.5 rounded-full ${opt.color} mr-2 shadow-sm`} />
                     {opt.label}
                   </button>
                 ))}
