@@ -90,7 +90,7 @@ const Acompanhar = () => {
             </div>
             <h1 className="text-3xl font-display font-bold mb-2">Acompanhar Denúncia</h1>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-md mx-auto">
-              teste as novas mudanças
+              Corrija todos os erros e bugs de segurança. Deixe todo o sistema totalmente seguro.
             </p>
           </div>
 
