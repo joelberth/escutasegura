@@ -59,6 +59,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
         <div className="flex items-start gap-3">
           <Checkbox
             id="aceito"
+            required
             checked={aceito}
             onCheckedChange={(checked) => setAceito(checked === true)}
             className="mt-1 h-5 w-5 border-primary/40 data-[state=checked]:bg-primary"
