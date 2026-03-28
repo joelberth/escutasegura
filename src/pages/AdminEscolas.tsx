@@ -168,7 +168,7 @@ const AdminEscolas = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-display font-bold">Escolas & Gestores</h2>
         <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
-          <Plus className="h-4 w-4" /> Nova Escola
+          <Plus className="h-4 w-4" /> Adicionar Logomarca
         </Button>
       </div>
 
