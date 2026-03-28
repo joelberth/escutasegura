@@ -31,6 +31,8 @@ const AdminUsuarios = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [confirmDelete, setConfirmDelete] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const fetchData = async () => {
     setLoading(true);
