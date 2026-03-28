@@ -627,6 +627,7 @@ const AdminDashboard = () => {
                 satisfaction={satisfaction}
                 pending={totalPending}
                 highUrgency={totalHighUrgency}
+                onCardClick={(tab) => setActiveTab(tab as TabKey)}
               />
 
               {/* Performance rings */}
