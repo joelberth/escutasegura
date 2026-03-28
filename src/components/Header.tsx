@@ -7,10 +7,21 @@ import ProfileButton from "@/components/ProfileButton";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
-      <div className="container flex h-16 items-center justify-between">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? "border-b border-border/80 bg-background/90 backdrop-blur-xl shadow-sm h-16" 
+        : "bg-transparent h-20"
+    }`}>
+      <div className="container flex h-full items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg">
           <Shield className="h-6 w-6 text-primary" />
           <span>Escola Segura Report</span>
