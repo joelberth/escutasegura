@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, BarChart3, Settings, LogOut, Eye, MessageSquare, CheckCircle2,
   Download, Clock, AlertCircle, Filter, Building2, UserCheck, FileText, MapPin, KeyRound,
-  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet
+  Bell, BellOff, TrendingUp, User, Users, PieChart as PieChartIcon, Calendar, Star, Search, Activity, FileSpreadsheet,
+  Image as ImageIcon, Loader2
 } from "lucide-react";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
