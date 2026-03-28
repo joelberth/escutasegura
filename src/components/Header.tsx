@@ -25,8 +25,12 @@ const Header = () => {
     }`}>
       <div className="container flex h-full items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg">
-          <Shield className="h-6 w-6 text-primary" />
-          <span>Escola Segura Report</span>
+          {settings.logo_url ? (
+            <img src={settings.logo_url} alt={settings.site_name} className="h-8 w-auto" />
+          ) : (
+            <Shield className="h-6 w-6 text-primary" />
+          )}
+          <span>{settings.site_name}</span>
         </Link>
 
         {/* Desktop nav */}
