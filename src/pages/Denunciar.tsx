@@ -55,7 +55,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
 
   return (
     <>
-      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/30 p-5">
+      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-secondary/10 p-5 shadow-sm shadow-primary/5">
         <div className="flex items-start gap-3">
           <Checkbox
             id="aceito"
