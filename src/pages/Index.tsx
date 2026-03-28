@@ -73,7 +73,7 @@ const Index = () => {
             className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto"
           >
             Milhares de estudantes brasileiros não têm um canal seguro para reportar problemas na escola. 
-            O Escola Segura Report muda isso — de forma 100% anônima e segura.
+            O {settings.site_name} muda isso — de forma 100% anônima e segura.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
