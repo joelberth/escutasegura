@@ -66,7 +66,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
           <div>
             <label htmlFor="aceito" className="text-sm leading-relaxed cursor-pointer text-foreground">
               <Shield className="h-4 w-4 inline text-primary mr-1 -mt-0.5" />
-              Aceito que esta denúncia seja totalmente anônima e declaro estar ciente de que será tratada com{" "}
+              ✅ Aceito que esta denúncia seja totalmente anônima e declaro estar ciente de que será tratada com{" "}
               <strong>confidencialidade total</strong> pela gestão da escola, respeitando a{" "}
               <strong>LGPD</strong>. Entendo que a plataforma não coleta nenhum dado pessoal meu e que denúncias de má-fé podem ter consequências legais.{" "}
               Li e concordo com o{" "}
