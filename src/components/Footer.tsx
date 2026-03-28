@@ -1,7 +1,10 @@
 import { Shield, Heart, Instagram, Mail, MapPin, Globe, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
-const Footer = () => (
+const Footer = () => {
+  const { settings } = useSiteSettings();
+  return (
   <footer className="border-t border-border bg-muted/40 py-16">
     <div className="container">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
