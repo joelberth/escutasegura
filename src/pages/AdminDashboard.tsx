@@ -213,6 +213,14 @@ const AdminDashboard = () => {
     return true;
   });
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTipo, filterStatus, filterEscola, searchText]);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const handleRespond = async () => {
     if (!selectedDenuncia || !responseText.trim()) return;
     setResponding(true);
