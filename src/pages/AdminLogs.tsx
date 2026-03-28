@@ -153,7 +153,7 @@ const AdminLogs = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((log) => (
+          {paginatedLogs.map((log) => (
             <div key={log.id} className="space-y-0">
               <div
                 className="rounded-xl glass p-4 shadow-card cursor-pointer hover:shadow-elevated transition-all"
@@ -198,7 +198,6 @@ const AdminLogs = () => {
                         {log.location_info || "Não disponível"}
                       </span>
                     </div>
-                    {/* Action buttons */}
                     <div className="flex gap-2 mt-3">
                       {((log as any).latitude || (log.location_info && log.location_info !== "Não disponível")) && (
                         <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={(e) => { e.stopPropagation(); openMap(log); }}>
@@ -212,7 +211,6 @@ const AdminLogs = () => {
                   </div>
                 </div>
               </div>
-              {/* Audit log inline */}
               {showAudit === log.id && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -233,6 +231,38 @@ const AdminLogs = () => {
               )}
             </div>
           ))}
+
+          {totalPages > 1 && (
+            <div className="pt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(i + 1)}
+                        isActive={currentPage === i + 1}
+                        className="cursor-pointer"
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       )}
 
