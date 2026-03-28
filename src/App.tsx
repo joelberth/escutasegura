@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import AccessibilityToolbar from "./components/AccessibilityToolbar";
+import ScrollToTop from "./components/ScrollToTop";
 import Denunciar from "./pages/Denunciar";
 import Acompanhar from "./pages/Acompanhar";
 import Sobre from "./pages/Sobre";
