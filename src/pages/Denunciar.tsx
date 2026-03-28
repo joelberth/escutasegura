@@ -38,8 +38,9 @@ const exampleData = {
 
 function generateCode() {
   const year = new Date().getFullYear();
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return `DEN-${year}-${num}`;
+  // Using a more secure and less guessable format (8 random chars)
+  const randomChars = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `DEN-${year}-${randomChars}`;
 }
 
 const termoSections = [
