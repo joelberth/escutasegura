@@ -76,6 +76,12 @@ const AdminLogs = () => {
     );
   });
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedLogs = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const exportPDF = () => {
     const rows = filtered.map((log) => `
       <tr>
