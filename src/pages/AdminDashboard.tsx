@@ -307,6 +307,21 @@ const AdminDashboard = () => {
     else setSelectedIds(new Set(filtered.map(d => d.id)));
   };
 
+  const exportCSV = () => {
+    const headers = ["Código,Tipo,Escola,Urgência,Status,Data,Descrição"];
+    const rows = filtered.map((d) =>
+      `${d.codigo_acompanhamento},${d.tipo},"${d.escola.replace(/"/g, '""')}",${d.urgencia},${d.status},${new Date(d.created_at).toLocaleDateString("pt-BR")},"${d.descricao.replace(/"/g, '""')}"`
+    );
+    const csv = [...headers, ...rows].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `denuncias-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportToExcel = async () => {
     toast({ title: "Preparando relatório completo...", description: "Aguarde um momento." });
     
