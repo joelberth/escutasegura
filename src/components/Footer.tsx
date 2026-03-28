@@ -64,7 +64,7 @@ const Footer = () => {
       </div>
 
       <div className="mt-16 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} Escola Segura Report. Todos os direitos reservados.</p>
+        <p>&copy; {new Date().getFullYear()} {settings.site_name}. Todos os direitos reservados.</p>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/50 border border-border/50">
             <MapPin className="h-3.5 w-3.5 text-primary" />
