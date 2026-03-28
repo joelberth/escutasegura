@@ -387,6 +387,9 @@ const Denunciar = () => {
                     placeholder="Ex: Centro Educa Mais Paulo Freire"
                   />
                 </div>
+                <div className="flex justify-between items-center px-1">
+                  <p className="text-[10px] text-muted-foreground">Não encontrou sua escola? Digite o nome completo acima.</p>
+                </div>
                 {showSuggestions && escolaSearch && filteredEscolas.length > 0 && (
                   <div className="absolute z-10 top-full mt-1 w-full rounded-xl border border-border bg-popover shadow-elevated max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2">
                     {filteredEscolas.map((e) => (
@@ -406,16 +409,25 @@ const Denunciar = () => {
 
             {/* Descrição */}
             <div className="space-y-2.5">
-              <label className="text-sm font-bold flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">3</span>
-                Descrição Detalhada *
-              </label>
+              <div className="flex justify-between items-end">
+                <label className="text-sm font-bold flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">3</span>
+                  Descrição Detalhada *
+                </label>
+                <span className={`text-[10px] font-mono ${descricao.length > 4500 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {descricao.length}/5000
+                </span>
+              </div>
               <Textarea
                 className="rounded-xl border-border/50 focus:ring-primary/20 min-h-[160px] resize-none"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Descreva o que aconteceu com o máximo de detalhes possível. Sua identidade será mantida em total sigilo."
+                maxLength={5000}
               />
+              <p className="text-[10px] text-muted-foreground px-1 italic">
+                💡 Dica: Tente responder QUEM, ONDE e QUANDO o fato ocorreu.
+              </p>
             </div>
 
             {/* Urgência */}
