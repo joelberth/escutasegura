@@ -21,6 +21,8 @@ const AdminLogs = () => {
   const [selectedLog, setSelectedLog] = useState<Denuncia | null>(null);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [showAudit, setShowAudit] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchLogs = async () => {
     setLoading(true);
