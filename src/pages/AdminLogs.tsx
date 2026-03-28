@@ -6,6 +6,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import LogDetailModal from "@/components/dashboard/LogDetailModal";
 import { motion } from "framer-motion";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 type Denuncia = Tables<"denuncias">;
 
