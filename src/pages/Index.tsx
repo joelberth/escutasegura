@@ -38,7 +38,9 @@ const cardVariants = {
   }),
 };
 
-const Index = () => (
+const Index = () => {
+  const { settings } = useSiteSettings();
+  return (
   <PageTransition>
     <div className="min-h-screen flex flex-col">
       <Header />
