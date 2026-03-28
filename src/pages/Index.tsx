@@ -114,7 +114,7 @@ const Index = () => {
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-              Por que usar o Escola Segura Report?
+              Por que usar o {settings.site_name}?
             </h2>
             <p className="text-muted-foreground italic">
               Desenvolvido com foco total na privacidade do aluno e na eficiência da gestão escolar.
