@@ -42,6 +42,7 @@ import SatisfactionPanel from "@/components/dashboard/SatisfactionPanel";
 import GlobalSearch from "@/components/dashboard/GlobalSearch";
 import SlaIndicator from "@/components/dashboard/SlaIndicator";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 type Denuncia = Tables<"denuncias">;
 
