@@ -78,6 +78,8 @@ const AdminDashboard = () => {
   const [responding, setResponding] = useState(false);
   const [pendingGestores, setPendingGestores] = useState<any[]>([]);
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchDenuncias = async (escolaFilter?: string | null) => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
