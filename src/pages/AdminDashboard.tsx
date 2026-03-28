@@ -184,12 +184,14 @@ const AdminDashboard = () => {
     const channel = supabase.channel("denuncias-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "denuncias" }, (payload) => {
         const nova = payload.new as Denuncia;
-        const title = nova.urgencia === "alta"
-          ? "🚨 DENÚNCIA URGENTE!"
-          : "🔔 Nova denúncia recebida!";
+        const isUrgent = nova.urgencia === "alta";
+        const title = isUrgent ? "🚨 DENÚNCIA URGENTE!" : "🔔 Nova denúncia recebida!";
         const desc = `${nova.escola} — ${tipoLabels[nova.tipo] || nova.tipo}`;
-        toast({ title, description: desc });
+        
+        toast({ title, description: desc, variant: isUrgent ? "destructive" : "default" });
+        if (isUrgent) playAlertSound();
         sendNotification(title, { body: desc, tag: nova.id });
+        
         if (gestorEscola) fetchDenuncias(gestorEscola);
         else fetchDenuncias();
       })
