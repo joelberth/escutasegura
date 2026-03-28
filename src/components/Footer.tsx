@@ -10,8 +10,12 @@ const Footer = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
         <div className="col-span-1 md:col-span-1 lg:col-span-1">
           <div className="flex items-center gap-2 font-display font-extrabold text-2xl mb-4 text-primary">
-            <Shield className="h-7 w-7" />
-            Escola Segura Report
+            {settings.logo_url ? (
+              <img src={settings.logo_url} alt={settings.site_name} className="h-10 w-auto" />
+            ) : (
+              <Shield className="h-7 w-7" />
+            )}
+            {settings.site_name}
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">
             Plataforma anônima e segura de denúncias escolares. Nossa missão é promover ambientes educacionais mais justos, pacíficos e inclusivos através da tecnologia e transparência.
