@@ -189,6 +189,7 @@ export type Database = {
           termo_aceito: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia: Database["public"]["Enums"]["nivel_urgencia"]
+          whatsapp: string | null
         }
         Insert: {
           arquivo_urls?: string[] | null
@@ -208,6 +209,7 @@ export type Database = {
           termo_aceito?: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
+          whatsapp?: string | null
         }
         Update: {
           arquivo_urls?: string[] | null
@@ -227,6 +229,7 @@ export type Database = {
           termo_aceito?: boolean
           tipo?: Database["public"]["Enums"]["tipo_denuncia"]
           urgencia?: Database["public"]["Enums"]["nivel_urgencia"]
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -396,6 +399,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_gestor_satisfaction: {
+        Args: never
+        Returns: {
+          escola_nome: string
+          gestor_id: string
+          gestor_nome: string
+          media_satisfacao: number
+          total_feedbacks: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
