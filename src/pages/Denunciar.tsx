@@ -542,7 +542,7 @@ const Denunciar = () => {
         </div>
       </main>
       <Footer />
-      {!showForm && <DenunciaChatbot />}
+      {showForm && <DenunciaChatbot />}
     </div>
     </PageTransition>
   );
