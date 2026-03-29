@@ -329,9 +329,9 @@ const Denunciar = () => {
               <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <Bot className="h-10 w-10 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">Como podemos ajudar hoje?</h1>
+              <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">Assistente de Denúncia</h1>
               <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto leading-relaxed">
-                Nossa IA está aqui para orientar você. Tire dúvidas sobre o que pode ser denunciado ou peça ajuda antes de prosseguir com o formulário formal.
+                Nossa IA utiliza processamento de linguagem natural para orientar você sobre o que pode ser denunciado, filtrar suas dúvidas e coletar as informações essenciais antes de abrir o formulário.
               </p>
               
               <div className="bg-card/50 border border-border/50 rounded-3xl p-6 md:p-8 backdrop-blur-sm shadow-soft mb-8">
