@@ -497,6 +497,31 @@ const Denunciar = () => {
                 ))}
               </div>
             </div>
+            
+            {/* WhatsApp (Opcional) */}
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">5</span>
+                Notificações via WhatsApp? (Opcional)
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                  <span className="text-muted-foreground text-sm font-bold">BR +55</span>
+                  <div className="h-4 w-px bg-border" />
+                </div>
+                <Input
+                  className="h-12 pl-20 rounded-xl border-border/50 focus:ring-primary/20"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="(00) 00000-0000"
+                  maxLength={11}
+                  type="tel"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
+                <Shield className="h-3 w-3" /> Receba avisos automáticos quando sua denúncia for respondida. Mantemos o sigilo.
+              </p>
+            </div>
 
             {/* Upload */}
             <div className="space-y-2">
