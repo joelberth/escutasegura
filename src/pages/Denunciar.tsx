@@ -324,28 +324,62 @@ const Denunciar = () => {
       <Header />
       <main className="flex-1 py-12 md:py-16">
         <div className="container max-w-2xl">
-          <div className="text-center mb-10 animate-fade-in-up">
-            <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-7 w-7 text-primary" />
-            </div>
-            <h1 className="text-3xl font-display font-bold mb-2">Fazer Denúncia Anônima</h1>
-            <p className="text-muted-foreground">
-              Sua identidade é completamente protegida. Preencha o formulário abaixo.
-            </p>
-          </div>
+          {!showForm ? (
+            <div className="text-center mb-10 animate-fade-in-up">
+              <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Bot className="h-10 w-10 text-primary" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">Como podemos ajudar hoje?</h1>
+              <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto leading-relaxed">
+                Nossa IA está aqui para orientar você. Tire dúvidas sobre o que pode ser denunciado ou peça ajuda antes de prosseguir com o formulário formal.
+              </p>
+              
+              <div className="bg-card/50 border border-border/50 rounded-3xl p-6 md:p-8 backdrop-blur-sm shadow-soft mb-8">
+                <DenunciaChatbot inline={true} onStartForm={() => setShowForm(true)} />
+              </div>
 
-          <div className="mb-8 grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map((s) => (
-              <div
-                key={s}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  (s === 1 && tipo) || (s === 2 && escola) || (s === 3 && descricao) || (s === 4 && aceito)
-                    ? "bg-primary w-full"
-                    : "bg-muted w-full opacity-50"
-                }`}
-              />
-            ))}
-          </div>
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-primary" /> Anonimato Total
+                </div>
+                <div className="h-1 w-1 rounded-full bg-border" />
+                <div className="flex items-center gap-1.5">
+                  <Lock className="h-4 w-4 text-primary" /> LGPD Compliant
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-10 animate-fade-in-up">
+                <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-7 w-7 text-primary" />
+                </div>
+                <h1 className="text-3xl font-display font-bold mb-2">Fazer Denúncia Anônima</h1>
+                <p className="text-muted-foreground">
+                  Sua identidade é completamente protegida. Preencha o formulário abaixo.
+                </p>
+                <button 
+                  onClick={() => setShowForm(false)} 
+                  className="mt-4 text-xs font-medium text-primary hover:underline flex items-center justify-center gap-1 mx-auto"
+                >
+                  <Bot className="h-3 w-3" /> Voltar para o Assistente
+                </button>
+              </div>
+
+              <div className="mb-8 grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((s) => (
+                  <div
+                    key={s}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      (s === 1 && tipo) || (s === 2 && escola) || (s === 3 && descricao) || (s === 4 && aceito)
+                        ? "bg-primary w-full"
+                        : "bg-muted w-full opacity-50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up-delay-1 p-6 md:p-8 rounded-3xl border border-border bg-card/50 backdrop-blur-sm shadow-soft" aria-label="Formulário de denúncia anônima">
             {/* Demo button */}
