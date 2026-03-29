@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import PageTransition from "@/components/PageTransition";
+import DenunciaChatbot from "@/components/DenunciaChatbot";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const benefits = [
@@ -284,6 +285,7 @@ const Index = () => {
 
       <Footer />
       <WhatsAppButton />
+      <DenunciaChatbot />
     </div>
   </PageTransition>
   );
