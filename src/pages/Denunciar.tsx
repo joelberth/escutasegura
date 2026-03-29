@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database, Clock } from "lucide-react";
+import { Shield, Upload, CheckCircle2, Copy, Search, Lock, FileText, Eye, Scale, Database, Clock, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
