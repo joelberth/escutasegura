@@ -381,7 +381,8 @@ const Denunciar = () => {
             </>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up-delay-1 p-6 md:p-8 rounded-3xl border border-border bg-card/50 backdrop-blur-sm shadow-soft" aria-label="Formulário de denúncia anônima">
+          {showForm && (
+            <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up-delay-1 p-6 md:p-8 rounded-3xl border border-border bg-card/50 backdrop-blur-sm shadow-soft" aria-label="Formulário de denúncia anônima">
             {/* Demo button */}
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
