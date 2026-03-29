@@ -139,6 +139,7 @@ const Denunciar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [descricao, setDescricao] = useState(() => localStorage.getItem("denuncia_draft_descricao") || "");
   const [urgencia, setUrgencia] = useState<"baixa" | "media" | "alta">("media");
+  const [whatsapp, setWhatsapp] = useState("");
   const [aceito, setAceito] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
