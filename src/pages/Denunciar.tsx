@@ -131,6 +131,7 @@ const TermoAceiteSection = ({ aceito, setAceito }: { aceito: boolean; setAceito:
 
 const Denunciar = () => {
   const { toast } = useToast();
+  const [showForm, setShowForm] = useState(false);
   const [tipo, setTipo] = useState("");
   const [escola, setEscola] = useState("");
   const [escolaSearch, setEscolaSearch] = useState("");
