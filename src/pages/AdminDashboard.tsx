@@ -1349,7 +1349,7 @@ const AdminDashboard = () => {
                               }`}>
                                 {urgenciaLabels[d.urgencia]}
                               </span>
-                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} />
+                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} slaDeadline={(d as any).sla_deadline} />
                             </div>
                             <p className="text-sm font-medium truncate">{d.escola}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
