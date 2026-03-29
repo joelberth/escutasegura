@@ -330,20 +330,26 @@ const AdminDashboard = () => {
   const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleRespond = async () => {
-    if (!selectedDenuncia || !responseText.trim()) return;
+    if (!selectedDenuncia || (!responseText.trim() && !publicResponseText.trim())) return;
     setResponding(true);
-    await supabase.from("denuncias").update({ response_text: responseText, status: "em_analise" as const }).eq("id", selectedDenuncia.id);
+    
+    const updates: any = { status: "em_analise" as const };
+    if (responseText.trim()) updates.response_text = responseText;
+    if (publicResponseText.trim()) updates.public_response = publicResponseText;
+    
+    await supabase.from("denuncias").update(updates).eq("id", selectedDenuncia.id);
     toast({ title: "Resposta enviada!" });
     
     // Notify via WhatsApp link if complainant provided a number
     const waNumber = (selectedDenuncia as any).whatsapp;
-    if (waNumber) {
+    if (waNumber && responseText.trim()) {
       const msg = encodeURIComponent(`Olá! Sua denúncia *${selectedDenuncia.codigo_acompanhamento}* recebeu uma atualização.\n\nResposta: ${responseText}\n\nAcompanhe em: ${window.location.origin}/acompanhar`);
       window.open(`https://wa.me/55${waNumber}?text=${msg}`, "_blank");
     }
 
     setSelectedDenuncia(null);
     setResponseText("");
+    setPublicResponseText("");
     setResponding(false);
     fetchDenuncias(gestorEscola);
   };
