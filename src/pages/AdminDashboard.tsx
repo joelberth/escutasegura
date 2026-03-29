@@ -132,7 +132,26 @@ const AdminDashboard = () => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
     if (escolaFilter) query = query.eq("escola", escolaFilter);
     const { data } = await query;
-    if (data) setDenuncias(data);
+    if (data) {
+      setDenuncias(data);
+      
+      // Check for expiring deadlines
+      const now = new Date();
+      data.forEach(d => {
+        if (d.status !== 'resolvida' && (d as any).sla_deadline) {
+          const deadline = new Date((d as any).sla_deadline);
+          const diffHours = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+          if (diffHours > 0 && diffHours <= 24) {
+             toast({ 
+               title: "⏳ Prazo expirando!", 
+               description: `A denúncia ${d.codigo_acompanhamento} vence em menos de 24h.`,
+               variant: "destructive"
+             });
+             playAlertSound();
+          }
+        }
+      });
+    }
     setLoading(false);
   };
 
