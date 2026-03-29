@@ -79,6 +79,7 @@ const AdminDashboard = () => {
   const [escolas, setEscolas] = useState<{ id: string; nome: string }[]>([]);
   const [selectedDenuncia, setSelectedDenuncia] = useState<Denuncia | null>(null);
   const [responseText, setResponseText] = useState("");
+  const [publicResponseText, setPublicResponseText] = useState("");
   const [responding, setResponding] = useState(false);
   const [pendingGestores, setPendingGestores] = useState<any[]>([]);
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
@@ -132,7 +133,26 @@ const AdminDashboard = () => {
     let query = supabase.from("denuncias").select("*").order("created_at", { ascending: false });
     if (escolaFilter) query = query.eq("escola", escolaFilter);
     const { data } = await query;
-    if (data) setDenuncias(data);
+    if (data) {
+      setDenuncias(data);
+      
+      // Check for expiring deadlines
+      const now = new Date();
+      data.forEach(d => {
+        if (d.status !== 'resolvida' && (d as any).sla_deadline) {
+          const deadline = new Date((d as any).sla_deadline);
+          const diffHours = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+          if (diffHours > 0 && diffHours <= 24) {
+             toast({ 
+               title: "⏳ Prazo expirando!", 
+               description: `A denúncia ${d.codigo_acompanhamento} vence em menos de 24h.`,
+               variant: "destructive"
+             });
+             playAlertSound();
+          }
+        }
+      });
+    }
     setLoading(false);
   };
 
@@ -330,20 +350,26 @@ const AdminDashboard = () => {
   const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleRespond = async () => {
-    if (!selectedDenuncia || !responseText.trim()) return;
+    if (!selectedDenuncia || (!responseText.trim() && !publicResponseText.trim())) return;
     setResponding(true);
-    await supabase.from("denuncias").update({ response_text: responseText, status: "em_analise" as const }).eq("id", selectedDenuncia.id);
+    
+    const updates: any = { status: "em_analise" as const };
+    if (responseText.trim()) updates.response_text = responseText;
+    if (publicResponseText.trim()) updates.public_response = publicResponseText;
+    
+    await supabase.from("denuncias").update(updates).eq("id", selectedDenuncia.id);
     toast({ title: "Resposta enviada!" });
     
     // Notify via WhatsApp link if complainant provided a number
     const waNumber = (selectedDenuncia as any).whatsapp;
-    if (waNumber) {
+    if (waNumber && responseText.trim()) {
       const msg = encodeURIComponent(`Olá! Sua denúncia *${selectedDenuncia.codigo_acompanhamento}* recebeu uma atualização.\n\nResposta: ${responseText}\n\nAcompanhe em: ${window.location.origin}/acompanhar`);
       window.open(`https://wa.me/55${waNumber}?text=${msg}`, "_blank");
     }
 
     setSelectedDenuncia(null);
     setResponseText("");
+    setPublicResponseText("");
     setResponding(false);
     fetchDenuncias(gestorEscola);
   };
@@ -1323,7 +1349,7 @@ const AdminDashboard = () => {
                               }`}>
                                 {urgenciaLabels[d.urgencia]}
                               </span>
-                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} />
+                              <SlaIndicator createdAt={d.created_at} status={d.status} urgencia={d.urgencia} slaDeadline={(d as any).sla_deadline} />
                             </div>
                             <p className="text-sm font-medium truncate">{d.escola}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{tipoLabels[d.tipo]} • {new Date(d.created_at).toLocaleDateString("pt-BR")}</p>
@@ -1421,15 +1447,25 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" /> Responder anonimamente
-                </label>
-                <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Escreva uma resposta..." rows={3} className="rounded-xl" />
+              
+              <div className="space-y-4 border-t border-border pt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" /> Resposta Privada (WhatsApp/Painel)
+                  </label>
+                  <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Visível apenas para o denunciante..." rows={2} className="rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" /> Resposta Pública (Sem nomes)
+                  </label>
+                  <Textarea value={publicResponseText} onChange={(e) => setPublicResponseText(e.target.value)} placeholder="Visível para a comunidade no acompanhamento..." rows={2} className="rounded-xl" />
+                </div>
                 <Button onClick={handleRespond} disabled={responding} className="w-full rounded-xl">
-                  {responding ? "Enviando..." : "Enviar Resposta"}
+                  {responding ? "Enviando..." : "Enviar Respostas"}
                 </Button>
               </div>
+
               {/* Real-time Chat */}
               <div className="border-t border-border pt-4">
                 <ChatPanel

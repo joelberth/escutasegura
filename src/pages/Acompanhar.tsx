@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Clock, CheckCircle2, AlertCircle, MessageSquare, PartyPopper } from "lucide-react";
+import { Search, Clock, CheckCircle2, AlertCircle, MessageSquare, PartyPopper, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ type Denuncia = {
   escola: string;
   status: "pendente" | "em_analise" | "resolvida";
   response_text: string | null;
+  public_response: string | null;
   created_at: string;
   resolved_at: string | null;
 };
@@ -186,13 +187,27 @@ const Acompanhar = () => {
                   </div>
                 </div>
 
+                {denuncia.public_response && (
+                  <div className="mt-4 rounded-xl bg-primary/5 border border-primary/20 p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Users className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider">Resposta Pública</span>
+                    </div>
+                    <p className="text-sm text-foreground leading-relaxed italic border-l-2 border-primary/30 pl-3">
+                      "{denuncia.public_response}"
+                    </p>
+                  </div>
+                )}
+
                 {denuncia.response_text && (
                   <div className="mt-4 rounded-xl bg-secondary/5 border border-secondary/20 p-5 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="h-7 w-7 rounded-lg bg-secondary/10 flex items-center justify-center">
                         <MessageSquare className="h-4 w-4 text-secondary" />
                       </div>
-                      <span className="text-xs font-bold text-secondary uppercase tracking-wider">Resposta da Gestão</span>
+                      <span className="text-xs font-bold text-secondary uppercase tracking-wider">Resposta da Gestão (Privada)</span>
                     </div>
                     <p className="text-sm text-foreground leading-relaxed italic border-l-2 border-secondary/30 pl-3">
                       "{denuncia.response_text}"
