@@ -538,10 +538,11 @@ const Denunciar = () => {
               </div>
             </div>
           </form>
+          )}
         </div>
       </main>
       <Footer />
-      <DenunciaChatbot />
+      {!showForm && <DenunciaChatbot />}
     </div>
     </PageTransition>
   );
