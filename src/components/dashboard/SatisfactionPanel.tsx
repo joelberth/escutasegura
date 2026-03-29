@@ -19,11 +19,19 @@ interface DenunciaMinimal {
 
 const SatisfactionPanel = () => {
   const [feedbacks, setFeedbacks] = useState<(FeedbackRow & { escola: string })[]>([]);
+  const [gestorSatisfaction, setGestorSatisfaction] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data: fb } = await supabase.from("denuncia_feedback").select("*").order("created_at", { ascending: false });
+      const [fbRes, gestorRes] = await Promise.all([
+        supabase.from("denuncia_feedback").select("*").order("created_at", { ascending: false }),
+        supabase.rpc("get_gestor_satisfaction")
+      ]);
+
+      const fb = fbRes.data;
+      if (gestorRes.data) setGestorSatisfaction(gestorRes.data);
+
       if (!fb || fb.length === 0) { setLoading(false); return; }
 
       const denunciaIds = [...new Set(fb.map(f => f.denuncia_id))];
