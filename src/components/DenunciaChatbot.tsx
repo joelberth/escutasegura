@@ -252,8 +252,6 @@ const DenunciaChatbot = ({ inline = false, onStartForm }: { inline?: boolean; on
       )}
     </>
   );
-    </>
-  );
 };
 
 export default DenunciaChatbot;
