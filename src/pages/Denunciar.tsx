@@ -358,12 +358,14 @@ const Denunciar = () => {
                 <p className="text-muted-foreground">
                   Sua identidade é completamente protegida. Preencha o formulário abaixo.
                 </p>
-                <button 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowForm(false)} 
-                  className="mt-4 text-xs font-medium text-primary hover:underline flex items-center justify-center gap-1 mx-auto"
+                  className="mt-4 text-xs font-medium text-primary hover:bg-primary/5 flex items-center justify-center gap-1.5 mx-auto rounded-full px-4"
                 >
-                  <Bot className="h-3 w-3" /> Voltar para o Assistente
-                </button>
+                  <Bot className="h-3.5 w-3.5" /> Voltar para o Assistente de IA
+                </Button>
               </div>
 
               <div className="mb-8 grid grid-cols-4 gap-2">
