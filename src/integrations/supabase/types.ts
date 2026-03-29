@@ -183,8 +183,10 @@ export type Database = {
           latitude: number | null
           location_info: string | null
           longitude: number | null
+          public_response: string | null
           resolved_at: string | null
           response_text: string | null
+          sla_deadline: string | null
           status: Database["public"]["Enums"]["status_denuncia"]
           termo_aceito: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
@@ -203,8 +205,10 @@ export type Database = {
           latitude?: number | null
           location_info?: string | null
           longitude?: number | null
+          public_response?: string | null
           resolved_at?: string | null
           response_text?: string | null
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
           termo_aceito?: boolean
           tipo: Database["public"]["Enums"]["tipo_denuncia"]
@@ -223,8 +227,10 @@ export type Database = {
           latitude?: number | null
           location_info?: string | null
           longitude?: number | null
+          public_response?: string | null
           resolved_at?: string | null
           response_text?: string | null
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["status_denuncia"]
           termo_aceito?: boolean
           tipo?: Database["public"]["Enums"]["tipo_denuncia"]
