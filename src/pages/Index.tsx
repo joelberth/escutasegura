@@ -285,6 +285,7 @@ const Index = () => {
 
       <Footer />
       <WhatsAppButton />
+      <DenunciaChatbot />
     </div>
   </PageTransition>
   );
