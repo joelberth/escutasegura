@@ -79,6 +79,7 @@ const AdminDashboard = () => {
   const [escolas, setEscolas] = useState<{ id: string; nome: string }[]>([]);
   const [selectedDenuncia, setSelectedDenuncia] = useState<Denuncia | null>(null);
   const [responseText, setResponseText] = useState("");
+  const [publicResponseText, setPublicResponseText] = useState("");
   const [responding, setResponding] = useState(false);
   const [pendingGestores, setPendingGestores] = useState<any[]>([]);
   const [accessRequests, setAccessRequests] = useState<any[]>([]);
@@ -1446,15 +1447,25 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" /> Responder anonimamente
-                </label>
-                <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Escreva uma resposta..." rows={3} className="rounded-xl" />
+              
+              <div className="space-y-4 border-t border-border pt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" /> Resposta Privada (WhatsApp/Painel)
+                  </label>
+                  <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)} placeholder="Visível apenas para o denunciante..." rows={2} className="rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" /> Resposta Pública (Sem nomes)
+                  </label>
+                  <Textarea value={publicResponseText} onChange={(e) => setPublicResponseText(e.target.value)} placeholder="Visível para a comunidade no acompanhamento..." rows={2} className="rounded-xl" />
+                </div>
                 <Button onClick={handleRespond} disabled={responding} className="w-full rounded-xl">
-                  {responding ? "Enviando..." : "Enviar Resposta"}
+                  {responding ? "Enviando..." : "Enviar Respostas"}
                 </Button>
               </div>
+
               {/* Real-time Chat */}
               <div className="border-t border-border pt-4">
                 <ChatPanel
