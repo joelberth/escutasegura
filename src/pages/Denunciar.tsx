@@ -253,6 +253,7 @@ const Denunciar = () => {
         latitude: null,
         longitude: null,
         termo_aceito: true,
+        whatsapp: whatsapp.trim() || null,
       } as any);
 
       if (error) throw error;
