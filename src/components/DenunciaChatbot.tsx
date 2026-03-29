@@ -14,14 +14,18 @@ const QUICK_QUESTIONS = [
   "O que é urgência alta?",
 ];
 
-const DenunciaChatbot = () => {
-  const [open, setOpen] = useState(false);
+const DenunciaChatbot = ({ inline = false, onStartForm }: { inline?: boolean; onStartForm?: () => void }) => {
+  const [open, setOpen] = useState(inline);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Olá! 👋 Sou o assistente do Escola Segura Report. Posso te ajudar a entender o que pode ser denunciado, como funciona o processo e tirar suas dúvidas antes de preencher o formulário. Como posso ajudar?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inline) setOpen(true);
+  }, [inline]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
